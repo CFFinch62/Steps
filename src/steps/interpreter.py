@@ -164,8 +164,28 @@ class Interpreter:
         Returns:
             The step's return value (or StepsNothing)
         """
-        # Get step definition
+        # Check for native (built-in) functions first
+        if step_name in builtins.NATIVE_FUNCTIONS:
+            native_def = builtins.NATIVE_FUNCTIONS[step_name]
+            native_fn = native_def["function"]
+            expected_params = native_def["params"]
+            
+            if len(arguments) != len(expected_params):
+                raise StepsRuntimeError(
+                    code=ErrorCode.E409,
+                    message=f"'{step_name}' expects {len(expected_params)} argument(s), got {len(arguments)}.",
+                    file=location.file if location else Path("<unknown>"),
+                    line=location.line if location else 0,
+                    column=location.column if location else 0,
+                    hint=f"Expected parameters: {', '.join(expected_params)}"
+                )
+            
+            # Call native function with arguments and location
+            return native_fn(*arguments, location=location)
+        
+        # Get step definition (regular step)
         step_def = self.env.get_step(step_name, location)
+
         
         # Check recursion
         if self.env.is_recursive(step_name):

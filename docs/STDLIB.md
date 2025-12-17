@@ -57,6 +57,25 @@ call repeat_text with "*", 5 storing result in s   # "*****"
 
 ---
 
+## Random Floor (Native)
+
+These functions are *native* - implemented in Python, not Steps code.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `random_int` | `min_val, max_val as number` | `number` | Random integer in range (inclusive) |
+| `random_choice` | `lst as list` | `any` | Pick random element from list |
+
+### Examples
+
+```steps
+call random_int with 1, 100 storing result in r     # 42 (random)
+call random_choice with my_list storing result in x # random element
+```
+
+
+---
+
 ## Overriding Stdlib
 
 Project floors can override stdlib definitions. If your project has a floor with the same name as a stdlib floor, your project's definitions take precedence.

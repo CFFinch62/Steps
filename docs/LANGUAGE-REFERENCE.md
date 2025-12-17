@@ -1070,14 +1070,22 @@ Steps includes a bundled standard library that's automatically available to all 
 | `reverse` | `s as text` | `text` | Reverse text |
 | `repeat_text` | `s, count` | `text` | Repeat N times |
 
+### Random Functions (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `random_int` | `min, max` | `number` | Random integer in range |
+| `random_choice` | `lst` | `any` | Pick from list |
+
 ### Example
 
 ```steps
 call abs with -5 storing result in x      # 5
-call reverse with "hello" storing result in r   # "olleh"
+call random_int with 1, 100 storing result in r   # random
 ```
 
 > **See also:** [STDLIB.md](STDLIB.md) for complete documentation.
+
 
 ---
 
