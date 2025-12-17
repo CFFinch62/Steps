@@ -330,7 +330,9 @@ false                       # Boolean
 nothing                     # Nothing
 [1, 2, 3]                   # List
 ["key": "value"]            # Table
+["_": ""]                   # Empty Table (workaround)
 ```
+
 
 ### 6.2 Variable References
 
