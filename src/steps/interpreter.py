@@ -14,7 +14,7 @@ from .ast_nodes import (
     # Declaration nodes
     ParameterNode, ReturnDeclaration, DeclarationNode,
     # Statement nodes
-    StatementNode, DisplayStatement, SetStatement, CallStatement,
+    StatementNode, DisplayStatement, SetStatement, SetIndexStatement, CallStatement,
     ReturnStatement, ExitStatement, IfStatement, IfBranch,
     RepeatTimesStatement, RepeatForEachStatement, RepeatWhileStatement,
     AttemptStatement, NoteStatement, AddToListStatement, RemoveFromListStatement,
@@ -222,6 +222,8 @@ class Interpreter:
             self._exec_display(stmt)
         elif isinstance(stmt, SetStatement):
             self._exec_set(stmt)
+        elif isinstance(stmt, SetIndexStatement):
+            self._exec_set_index(stmt)
         elif isinstance(stmt, CallStatement):
             self._exec_call(stmt)
         elif isinstance(stmt, ReturnStatement):
@@ -263,6 +265,17 @@ class Interpreter:
         """Execute: set target to value"""
         value = self.evaluate_expression(stmt.value)
         self.env.set_variable(stmt.target, value, stmt.location)
+    
+    def _exec_set_index(self, stmt: SetIndexStatement) -> None:
+        """Execute: set target[index] to value"""
+        # Get the container (list or table)
+        container = self.env.get_variable(stmt.target, stmt.location)
+        # Evaluate the index/key
+        key = self.evaluate_expression(stmt.index)
+        # Evaluate the value
+        value = self.evaluate_expression(stmt.value)
+        # Use builtins to set the value
+        builtins.table_set(container, key, value, stmt.location)
     
     def _exec_call(self, stmt: CallStatement) -> None:
         """Execute: call step_name [with args] [storing result in var]"""

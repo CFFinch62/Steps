@@ -20,7 +20,7 @@ from .ast_nodes import (
     # Declaration nodes
     ParameterNode, ReturnDeclaration, DeclarationNode,
     # Statement nodes
-    StatementNode, DisplayStatement, SetStatement, CallStatement,
+    StatementNode, DisplayStatement, SetStatement, SetIndexStatement, CallStatement,
     ReturnStatement, ExitStatement, IfStatement, IfBranch,
     RepeatTimesStatement, RepeatForEachStatement, RepeatWhileStatement,
     AttemptStatement, NoteStatement, AddToListStatement, RemoveFromListStatement,
@@ -615,11 +615,29 @@ class Parser:
             expression=expr
         )
     
-    def parse_set(self) -> SetStatement:
-        """Parse: set target to value"""
+    def parse_set(self) -> Union[SetStatement, SetIndexStatement]:
+        """Parse: set target to value OR set target[index] to value"""
         start = self.previous
         
         target_token = self.expect(TokenType.IDENTIFIER, "Expected variable name after 'set'")
+        
+        # Check for bracket notation: set target[index] to value
+        if self.match(TokenType.LBRACKET):
+            index_expr = self.parse_expression()
+            self.expect(TokenType.RBRACKET, "Expected ']' after index")
+
+            self.expect(TokenType.TO, "Expected 'to' after ']'")
+            value = self.parse_expression()
+            self.match(TokenType.NEWLINE)
+            
+            return SetIndexStatement(
+                location=self.location_from(start),
+                target=target_token.value,
+                index=index_expr,
+                value=value
+            )
+        
+        # Normal assignment: set target to value
         self.expect(TokenType.TO, "Expected 'to' after variable name")
         value = self.parse_expression()
         self.match(TokenType.NEWLINE)

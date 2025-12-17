@@ -597,24 +597,53 @@ def table_get(
 
 
 def table_set(
-    table: StepsValue, 
+    container: StepsValue, 
     key: StepsValue, 
     value: StepsValue,
     location: Optional[SourceLocation] = None
 ) -> None:
-    """Set value for key in table (mutates the table)."""
-    if not isinstance(table, StepsTable):
-        raise StepsTypeError(
-            code=ErrorCode.E302,
-            message=f"Cannot set key on {table.type_name()}, only on tables.",
-            file=location.file if location else None,
-            line=location.line if location else 0,
-            column=location.column if location else 0,
-            hint="Use square brackets to set values only on tables."
-        )
+    """Set value for key in table or index in list (mutates the container)."""
+    # Handle list assignment
+    if isinstance(container, StepsList):
+        if not isinstance(key, StepsNumber):
+            raise StepsTypeError(
+                code=ErrorCode.E302,
+                message=f"List index must be a number, got {key.type_name()}.",
+                file=location.file if location else None,
+                line=location.line if location else 0,
+                column=location.column if location else 0,
+                hint="Use a number like 0, 1, 2 to access list elements."
+            )
+        
+        index = int(key.value)
+        if index < 0 or index >= len(container.elements):
+            raise StepsRuntimeError(
+                code=ErrorCode.E304,
+                message=f"List index {index} out of range. List has {len(container.elements)} element(s).",
+                file=location.file if location else None,
+                line=location.line if location else 0,
+                column=location.column if location else 0,
+                hint=f"Valid indices are 0 to {len(container.elements) - 1}."
+            )
+        
+        container.elements[index] = value
+        return
     
-    key_str = key.as_text().value
-    table.set(key_str, value)
+    # Handle table assignment
+    if isinstance(container, StepsTable):
+        key_str = key.as_text().value
+        container.set(key_str, value)
+        return
+    
+    raise StepsTypeError(
+        code=ErrorCode.E302,
+        message=f"Cannot set index on {container.type_name()}, only on lists and tables.",
+        file=location.file if location else None,
+        line=location.line if location else 0,
+        column=location.column if location else 0,
+        hint="Use square brackets to set values only on lists and tables."
+    )
+
 
 
 def table_has_key(

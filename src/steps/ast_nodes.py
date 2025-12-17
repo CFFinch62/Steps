@@ -173,6 +173,23 @@ class SetStatement(StatementNode):
 
 
 @dataclass
+class SetIndexStatement(StatementNode):
+    """Indexed assignment (table or list).
+    
+    Example: set my_table["key"] to value
+    Example: set my_list[0] to value
+    
+    Attributes:
+        target: Variable name of table or list
+        index: Expression for key (table) or index (list)
+        value: Expression to evaluate and assign
+    """
+    target: str
+    index: ExpressionNode
+    value: ExpressionNode
+
+
+@dataclass
 class CallStatement(StatementNode):
     """Step or riser invocation.
     
@@ -624,8 +641,12 @@ class ASTVisitor:
     def visit_SetStatement(self, node: SetStatement) -> Any:
         raise NotImplementedError
     
+    def visit_SetIndexStatement(self, node: 'SetIndexStatement') -> Any:
+        raise NotImplementedError
+    
     def visit_CallStatement(self, node: CallStatement) -> Any:
         raise NotImplementedError
+
     
     def visit_ReturnStatement(self, node: ReturnStatement) -> Any:
         raise NotImplementedError
