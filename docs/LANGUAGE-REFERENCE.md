@@ -367,7 +367,18 @@ set text to 42 as text
 set bool to 1 as boolean
 ```
 
-### 6.6 Grouped Expressions
+### 6.6 Number Formatting
+
+Format numbers with a specific number of decimal places using `as decimal(N)`:
+
+```steps
+set pi to 3.14159
+display pi as decimal(2)       # "3.14"
+display pi as decimal(4)       # "3.1416"
+display 5 as decimal(2)        # "5.00"
+```
+
+### 6.7 Grouped Expressions
 
 ```steps
 set result to (a + b) * c

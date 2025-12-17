@@ -30,6 +30,7 @@ from .ast_nodes import (
     BinaryOpNode, UnaryOpNode, TypeConversionNode, TypeOfNode, TypeCheckNode, TableAccessNode,
     AddedToNode, SplitByNode, CharacterAtNode, LengthOfNode,
     ContainsNode, StartsWithNode, EndsWithNode, IsInNode,
+    FormatNumberNode,
 )
 from .errors import ParseError, StepsError, SourceLocation, ErrorCode
 from .lexer import Token, TokenType, Lexer
@@ -1129,15 +1130,35 @@ class Parser:
                     table=expr,
                     key=key
                 )
-            # Type conversion: expr as type
+            # Type conversion: expr as type or formatting: expr as decimal(N)
             elif self.match(TokenType.AS):
                 as_token = self.previous
-                type_token = self.advance()
-                expr = TypeConversionNode(
-                    location=self.location_from(as_token),
-                    expression=expr,
-                    target_type=type_token.value
-                )
+                
+                # Check for "decimal" keyword which implies formatting
+                # We need to check if the current token is "decimal" AND the next is "("
+                if (self.check(TokenType.IDENTIFIER) and 
+                    self.current.value == "decimal" and 
+                    self.peek().type == TokenType.LPAREN):
+                    
+                    self.advance() # consume "decimal"
+                    self.expect(TokenType.LPAREN, "Expected '(' after 'decimal'")
+                    places = self.parse_expression()
+                    self.expect(TokenType.RPAREN, "Expected ')' after decimal places")
+                    
+                    expr = FormatNumberNode(
+                        location=self.location_from(as_token),
+                        expression=expr,
+                        decimal_places=places
+                    )
+                else:
+                    # Standard type conversion
+                    type_token = self.advance()
+                    expr = TypeConversionNode(
+                        location=self.location_from(as_token),
+                        expression=expr,
+                        target_type=type_token.value
+                    )
+
             else:
                 break
         

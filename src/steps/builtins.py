@@ -17,7 +17,38 @@ from .errors import StepsRuntimeError, StepsTypeError, SourceLocation, ErrorCode
 # Type Checking Operations
 # =============================================================================
 
+
+def _validate_type(
+    value: StepsValue, 
+    expected_type: type, 
+    op_name: str, 
+    location: Optional[SourceLocation] = None
+) -> None:
+    """Validate that a value is of the expected type."""
+    if not isinstance(value, expected_type):
+        # Map class to nice name
+        type_map = {
+            StepsNumber: "number",
+            StepsText: "text",
+            StepsBoolean: "boolean",
+            StepsList: "list",
+            StepsTable: "table",
+            StepsNothing: "nothing"
+        }
+        expected_name = type_map.get(expected_type, expected_type.__name__)
+        
+        raise StepsTypeError(
+            code=ErrorCode.E302,
+            message=f"'{op_name}' requires a {expected_name}, but got a {value.type_name()}.",
+            file=location.file if location else Path("<unknown>"),
+            line=location.line if location else 0,
+            column=location.column if location else 0,
+            hint=f"Ensure the value passed to '{op_name}' is a {expected_name}."
+        )
+
+
 def type_of(value: StepsValue) -> str:
+
     """Get the type name of a Steps value."""
     return value.type_name()
 
@@ -81,6 +112,36 @@ def convert_to_number(
 def convert_to_text(value: StepsValue) -> StepsText:
     """Convert a value to text."""
     return value.as_text()
+
+
+def uppercase(text: StepsValue) -> StepsText:
+    """Convert text to uppercase."""
+    _validate_type(text, StepsText, "uppercase")
+    return StepsText(text.value.upper())
+
+
+def format_number_string(value: StepsValue, places: StepsValue) -> StepsText:
+    """Format a number with specific decimal places."""
+    _validate_type(value, StepsNumber, "format number")
+    _validate_type(places, StepsNumber, "format number decimal places")
+    
+    try:
+        places_int = int(places.value)
+        if places_int < 0:
+            raise ValueError("Decimal places cannot be negative")
+            
+        formatted = f"{value.value:.{places_int}f}"
+        return StepsText(formatted)
+    except ValueError as e:
+        # Should catch conversion errors or negative places
+        raise StepsRuntimeError(
+            code=ErrorCode.E304, # Using Generic Runtime Error for now
+            message=f"Invalid decimal places: {e}",
+            file=Path("builtins"),
+            line=0,
+            column=0
+        )
+
 
 
 def convert_to_boolean(value: StepsValue) -> StepsBoolean:

@@ -19,7 +19,7 @@ step: calc_from_price_and_profit
         set margin to (profit / price) * 100
         set markup to (profit / cost) * 100
 
-        set results to []
+        set results to ["_":""]
         set results["price"] to price
         set results["margin"] to margin
         set results["profit"] to profit

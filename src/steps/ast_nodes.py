@@ -500,6 +500,21 @@ class TypeConversionNode(ExpressionNode):
 
 
 @dataclass
+class FormatNumberNode(ExpressionNode):
+    """Number formatting expression.
+    
+    Example: pi as decimal(2)
+    
+    Attributes:
+        expression: Expression to format
+        decimal_places: Expression for number of decimal places
+    """
+    expression: ExpressionNode
+    decimal_places: ExpressionNode
+
+
+
+@dataclass
 class TypeOfNode(ExpressionNode):
     """Get the type of an expression.
     

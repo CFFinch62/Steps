@@ -360,6 +360,12 @@ set discount to total * 0.1
 set final to total - discount
 ```
 
+**Formatting Numbers:**
+```steps
+set pi to 3.14159265
+display "Pi is " added to (pi as decimal(2))    # "Pi is 3.14"
+```
+
 ### Text (Strings)
 
 ```steps

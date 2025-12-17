@@ -24,7 +24,9 @@ from .ast_nodes import (
     BinaryOpNode, UnaryOpNode, TypeConversionNode, TypeOfNode, TypeCheckNode, TableAccessNode,
     AddedToNode, SplitByNode, CharacterAtNode, LengthOfNode,
     ContainsNode, StartsWithNode, EndsWithNode, IsInNode,
+    FormatNumberNode,
 )
+
 from .environment import Environment, StepDefinition
 from .types import (
     StepsValue, StepsNumber, StepsText, StepsBoolean, 
@@ -546,9 +548,16 @@ class Interpreter:
         if isinstance(expr, TypeCheckNode):
             return self._eval_type_check(expr)
         
+        # Number formatting
+        if isinstance(expr, FormatNumberNode):
+            value = self.evaluate_expression(expr.expression)
+            places = self.evaluate_expression(expr.decimal_places)
+            return builtins.format_number_string(value, places)
+        
         # Collection access
         if isinstance(expr, TableAccessNode):
             return self._eval_table_access(expr)
+
         
         # Text operations
         if isinstance(expr, AddedToNode):
