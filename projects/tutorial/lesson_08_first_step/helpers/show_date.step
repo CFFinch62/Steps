@@ -1,0 +1,9 @@
+step: show_date
+    belongs to: helpers
+    expects: nothing
+    returns: nothing
+    
+    do:
+        display "Today's date: December 11, 2025"
+        display "This is another reusable step!"
+

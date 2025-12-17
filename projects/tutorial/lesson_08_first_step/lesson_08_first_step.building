@@ -1,0 +1,26 @@
+building: lesson_08_first_step
+    note: Lesson 8 - Creating Your First Step
+    note: Learn how to create and call reusable steps
+    
+    display "=== Calling Steps ==="
+    display ""
+    
+    call greet
+    
+    display ""
+    call show_date
+    
+    display ""
+    call greet
+    
+    display ""
+    display "=== Steps with Return Values ==="
+    call get_lucky_number storing result in lucky
+    display "Your lucky number is: " added to (lucky as text)
+    
+    display ""
+    call get_greeting storing result in message
+    display message
+    
+    exit
+

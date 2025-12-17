@@ -1,0 +1,5 @@
+# Install the missing IDE dependencies
+pip install textual watchfiles
+
+# Now try the IDE
+python -m steps_ide.main

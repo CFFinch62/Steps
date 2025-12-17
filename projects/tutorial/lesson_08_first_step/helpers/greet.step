@@ -1,0 +1,9 @@
+step: greet
+    belongs to: helpers
+    expects: nothing
+    returns: nothing
+    
+    do:
+        display "Hello from the greet step!"
+        display "This step can be called multiple times."
+

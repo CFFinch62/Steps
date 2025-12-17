@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Steps Programming Language</title>
+    <meta name="description" content="Install Steps and start teaching programming in minutes. Complete setup guide for educators.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🏗️</span>
+                <span class="logo-text">Steps</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="getting-started.html" class="active">Getting Started</a></li>
+                <li><a href="examples.html">Examples</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <div class="container">
+            <h1>Getting Started with Steps</h1>
+            <p>Install and start teaching programming in less than 5 minutes</p>
+        </div>
+    </header>
+
+    <section class="getting-started-content">
+        <div class="container">
+            <div class="prerequisites">
+                <h2>Prerequisites</h2>
+                <p>Before you begin, make sure you have:</p>
+                <ul class="checklist">
+                    <li>Python 3.10 or higher installed</li>
+                    <li>pip (Python package manager)</li>
+                    <li>A terminal or command prompt</li>
+                    <li>A text editor or IDE</li>
+                </ul>
+                <p class="note">Don't have Python? Download it from <a href="https://www.python.org/downloads/" target="_blank">python.org</a></p>
+            </div>
+
+            <div class="installation-steps">
+                <h2>Installation</h2>
+
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Clone the Repository</h3>
+                        <p>Download the Steps source code from GitHub:</p>
+                        <pre class="code-block"><code>git clone &lt;repository-url&gt;
+cd Steps</code></pre>
+                        <p class="step-note">Replace <code>&lt;repository-url&gt;</code> with the actual GitHub repository URL.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Create Virtual Environment (Recommended)</h3>
+                        <p>Keep Steps isolated from other Python projects:</p>
+                        <pre class="code-block"><code># Create virtual environment
+python3 -m venv venv
+
+# Activate it
+source venv/bin/activate          # On Linux/Mac
+venv\Scripts\activate            # On Windows</code></pre>
+                        <p class="step-note">You'll need to activate the virtual environment each time you use Steps.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Install Steps</h3>
+                        <p>Install Steps in development mode:</p>
+                        <pre class="code-block"><code>pip install -e .</code></pre>
+                        <p class="step-note">The <code>-e</code> flag installs in editable mode, perfect for exploring and customizing.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Install IDE Dependencies (Optional)</h3>
+                        <p>For the best experience, install the Steps IDE:</p>
+                        <pre class="code-block"><code>pip install textual watchfiles</code></pre>
+                        <p class="step-note">The IDE provides a graphical development environment built specifically for Steps.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Verify Installation</h3>
+                        <p>Test that Steps is installed correctly:</p>
+                        <pre class="code-block"><code># Try the REPL
+python -m steps_repl.main
+
+# You should see:
+Steps REPL v0.1 - Educational Programming Environment
+Type 'help' for available commands, 'exit' to quit.
+
+>>></code></pre>
+                        <p class="step-note">Type <code>exit</code> to quit the REPL.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="first-program">
+                <h2>Your First Steps Program</h2>
+                <p>Let's create a simple program to make sure everything works!</p>
+
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Project Folder</h3>
+                        <pre class="code-block"><code>mkdir hello_world
+cd hello_world</code></pre>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Create the Building File</h3>
+                        <p>Create a file named <code>hello_world.building</code> with this content:</p>
+                        <pre class="code-block"><code><span class="keyword">building:</span> hello_world
+    <span class="keyword">note:</span> My first Steps program!
+
+    <span class="keyword">display</span> <span class="string">"Hello, Steps!"</span>
+    <span class="keyword">display</span> <span class="string">"Welcome to programming!"</span>
+
+    <span class="keyword">exit</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Run Your Program</h3>
+                        <pre class="code-block"><code>python -m steps.main run .</code></pre>
+                        <p>You should see:</p>
+                        <pre class="output-block"><code>Hello, Steps!
+Welcome to programming!</code></pre>
+                        <p class="success">Congratulations! You've just run your first Steps program!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tools-overview">
+                <h2>Development Tools</h2>
+                <p>Steps comes with three tools for different learning scenarios:</p>
+
+                <div class="tool-cards">
+                    <div class="tool-card">
+                        <h3>🖥️ Command Line</h3>
+                        <p>Professional workflow for running and checking programs.</p>
+                        <h4>Common Commands:</h4>
+                        <pre class="code-block"><code># Run a program
+python -m steps.main run &lt;path&gt;
+
+# Check syntax without running
+python -m steps.main check &lt;path&gt;
+
+# Generate program diagram
+python -m steps.main diagram &lt;path&gt;</code></pre>
+                        <p class="tool-use"><strong>Best for:</strong> Teaching command-line skills, automated testing, CI/CD integration</p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>💬 Interactive REPL</h3>
+                        <p>Experiment and explore concepts without creating files.</p>
+                        <h4>How to Use:</h4>
+                        <pre class="code-block"><code># Start the REPL
+python -m steps_repl.main
+
+# Try commands:
+>>> set name to "Alice"
+>>> display name
+Alice
+>>> vars
+Variables:
+  name = "Alice"</code></pre>
+                        <p class="tool-use"><strong>Best for:</strong> Interactive demonstrations, exploring new concepts, quick experiments</p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>🎨 Steps IDE</h3>
+                        <p>Full development environment with project browser and integrated terminal.</p>
+                        <h4>Launch:</h4>
+                        <pre class="code-block"><code>python -m steps_ide.main</code></pre>
+                        <h4>Key Shortcuts:</h4>
+                        <ul class="shortcuts">
+                            <li><kbd>F5</kbd> - Run project</li>
+                            <li><kbd>F6</kbd> - Check syntax</li>
+                            <li><kbd>Ctrl+O</kbd> - Open file</li>
+                            <li><kbd>Ctrl+S</kbd> - Save file</li>
+                            <li><kbd>Ctrl+Shift+P</kbd> - Project browser</li>
+                        </ul>
+                        <p class="tool-use"><strong>Best for:</strong> Complete project development, visual learners, classroom demos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="learning-path">
+                <h2>Learning Path</h2>
+                <p>Once you have Steps installed, here's how to proceed:</p>
+
+                <div class="path-steps">
+                    <div class="path-step">
+                        <div class="path-icon">1️⃣</div>
+                        <h3>Start with the REPL</h3>
+                        <p>Get comfortable with basic syntax by trying commands interactively.</p>
+                        <pre class="code-block"><code>python -m steps_repl.main</code></pre>
+                        <p>Try: variables, math, text operations, conditionals</p>
+                    </div>
+
+                    <div class="path-step">
+                        <div class="path-icon">2️⃣</div>
+                        <h3>Follow the Tutorial</h3>
+                        <p>Work through the 11-lesson tutorial included with Steps.</p>
+                        <p>Location: <code>projects/tutorial/</code></p>
+                        <p>Each lesson has runnable code and exercises.</p>
+                        <a href="docs/TUTORIAL.html" class="btn btn-small">View Tutorial</a>
+                    </div>
+
+                    <div class="path-step">
+                        <div class="path-icon">3️⃣</div>
+                        <h3>Explore Examples</h3>
+                        <p>Study complete programs in the <code>projects/</code> folder:</p>
+                        <ul>
+                            <li><code>hello_world/</code> - Basic program</li>
+                            <li><code>tip_calculator/</code> - With steps and floors</li>
+                            <li><code>price_calculator/</code> - More complex logic</li>
+                        </ul>
+                        <a href="examples.html" class="btn btn-small">See Examples</a>
+                    </div>
+
+                    <div class="path-step">
+                        <div class="path-icon">4️⃣</div>
+                        <h3>Build Your Own</h3>
+                        <p>Create your first project from scratch:</p>
+                        <ul>
+                            <li>Simple calculator</li>
+                            <li>Number guessing game</li>
+                            <li>Quiz program</li>
+                            <li>Todo list manager</li>
+                        </ul>
+                    </div>
+
+                    <div class="path-step">
+                        <div class="path-icon">5️⃣</div>
+                        <h3>Read the Docs</h3>
+                        <p>Deep dive into language features:</p>
+                        <ul>
+                            <li><a href="docs/USER-GUIDE.html">User Guide</a> - Complete walkthrough</li>
+                            <li><a href="docs/LANGUAGE-REFERENCE.html">Language Reference</a> - All syntax and features</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="teaching-tips">
+                <h2>Tips for Educators</h2>
+
+                <div class="tip-cards">
+                    <div class="tip-card">
+                        <h3>🎯 Start Simple</h3>
+                        <p>Begin with the REPL and single-file buildings. Don't introduce floors and steps until students are comfortable with basic syntax.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>📊 Show the Structure</h3>
+                        <p>Use the file browser to show how program organization is visible. This is one of Steps' key teaching advantages.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>🔄 Use the Tutorial</h3>
+                        <p>The included tutorial is classroom-ready. Each lesson is self-contained and builds progressively.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>💡 Encourage Experimentation</h3>
+                        <p>The REPL is perfect for "what if" questions. Students can try ideas immediately without creating files.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>🐛 Embrace Errors</h3>
+                        <p>Steps error messages are educational. When students get errors, use them as teaching moments.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h3>🏗️ Emphasize the Metaphor</h3>
+                        <p>The building metaphor isn't just cute - it's pedagogically powerful. Reinforce it consistently.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="troubleshooting">
+                <h2>Troubleshooting</h2>
+
+                <div class="trouble-item">
+                    <h3>Python not found</h3>
+                    <p><strong>Problem:</strong> <code>python: command not found</code></p>
+                    <p><strong>Solution:</strong> Try <code>python3</code> instead of <code>python</code>, or install Python from <a href="https://www.python.org/downloads/">python.org</a></p>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>Module not found</h3>
+                    <p><strong>Problem:</strong> <code>ModuleNotFoundError: No module named 'steps'</code></p>
+                    <p><strong>Solution:</strong> Make sure you've run <code>pip install -e .</code> from the Steps directory and activated your virtual environment.</p>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>Permission denied</h3>
+                    <p><strong>Problem:</strong> Permission errors when installing</p>
+                    <p><strong>Solution:</strong> Use a virtual environment or add <code>--user</code> flag: <code>pip install --user -e .</code></p>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>IDE won't start</h3>
+                    <p><strong>Problem:</strong> Error launching Steps IDE</p>
+                    <p><strong>Solution:</strong> Make sure you've installed IDE dependencies: <code>pip install textual watchfiles</code></p>
+                </div>
+            </div>
+
+            <div class="next-steps">
+                <h2>Next Steps</h2>
+                <p>You're ready to start teaching with Steps! Here are your next moves:</p>
+
+                <div class="next-actions">
+                    <a href="examples.html" class="action-card">
+                        <h3>📚 Explore Examples</h3>
+                        <p>See complete programs and understand how they work</p>
+                    </a>
+
+                    <a href="docs/TUTORIAL.html" class="action-card">
+                        <h3>🎓 Start Tutorial</h3>
+                        <p>Work through 11 progressive lessons</p>
+                    </a>
+
+                    <a href="docs/LANGUAGE-REFERENCE.html" class="action-card">
+                        <h3>📖 Read Reference</h3>
+                        <p>Learn every feature of the language</p>
+                    </a>
+
+                    <a href="features.html" class="action-card">
+                        <h3>✨ Discover Features</h3>
+                        <p>Understand what makes Steps unique</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Questions or Need Help?</h2>
+            <p>Join our community or check out the comprehensive documentation</p>
+            <div class="cta-buttons">
+                <a href="docs/USER-GUIDE.html" class="btn btn-primary btn-large">User Guide</a>
+                <a href="#" class="btn btn-secondary btn-large">Community Forum</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Steps Programming Language</h3>
+                    <p>An educational programming language that makes program structure visible and mandatory.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="features.html">Features</a></li>
+                        <li><a href="getting-started.html">Getting Started</a></li>
+                        <li><a href="examples.html">Examples</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="docs/TUTORIAL.html">Tutorial</a></li>
+                        <li><a href="docs/LANGUAGE-REFERENCE.html">Language Reference</a></li>
+                        <li><a href="docs/USER-GUIDE.html">User Guide</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p><strong>Chuck Finch</strong><br>
+                    Fragillidæ Software</p>
+                    <p>221 Walden Court<br>
+                    East Moriches, NY 11940</p>
+                    <p>Phone: <a href="tel:+16312769068">(631) 276-9068</a><br>
+                    Email: <a href="mailto:info@fragillidaesoftware.com">info@fragillidaesoftware.com</a></p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Fragillidæ Software. Licensed under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

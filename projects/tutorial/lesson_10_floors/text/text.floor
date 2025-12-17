@@ -1,0 +1,6 @@
+floor: text
+
+    step: uppercase
+    step: lowercase
+    step: reverse
+

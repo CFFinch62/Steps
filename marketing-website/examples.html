@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examples - Steps Programming Language</title>
+    <meta name="description" content="Explore complete Steps programs with detailed explanations. See how real programs are built with Steps.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🏗️</span>
+                <span class="logo-text">Steps</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="getting-started.html">Getting Started</a></li>
+                <li><a href="examples.html" class="active">Examples</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <div class="container">
+            <h1>Example Programs</h1>
+            <p>Learn by example - see how real programs are built with Steps</p>
+        </div>
+    </header>
+
+    <section class="examples-intro">
+        <div class="container">
+            <p class="intro-text">
+                All examples are included in the Steps installation at <code>projects/</code>.
+                You can run them, modify them, and learn from them. Each example demonstrates
+                different aspects of the language, from simple single-file programs to complex
+                multi-floor applications.
+            </p>
+        </div>
+    </section>
+
+    <section class="example-detail">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 1: Hello World</h2>
+                <span class="difficulty-badge beginner">Beginner</span>
+            </div>
+
+            <div class="example-description">
+                <p>The simplest possible program. Shows basic program structure and output.</p>
+                <p><strong>Concepts:</strong> Building structure, display statement, program termination</p>
+            </div>
+
+            <div class="example-structure">
+                <h3>Project Structure</h3>
+                <pre class="structure-tree"><code>hello_world/
+└── hello_world.building</code></pre>
+            </div>
+
+            <div class="example-code">
+                <h3>hello_world.building</h3>
+                <pre class="code-window"><code><span class="keyword">building:</span> <span class="identifier">hello_world</span>
+    <span class="keyword">display</span> <span class="string">"Hello, World!"</span>
+    <span class="keyword">exit</span></code></pre>
+            </div>
+
+            <div class="example-run">
+                <h3>How to Run</h3>
+                <pre class="code-block"><code>python -m steps.main run projects/hello_world/</code></pre>
+                <h4>Output:</h4>
+                <pre class="output-block"><code>Hello, World!</code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>Every program starts with <code>building: name</code></li>
+                    <li>Use <code>display</code> to show output</li>
+                    <li>Programs end with <code>exit</code></li>
+                    <li>Building name must match the filename</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="example-detail alternate">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 2: Tip Calculator</h2>
+                <span class="difficulty-badge intermediate">Intermediate</span>
+            </div>
+
+            <div class="example-description">
+                <p>A practical application that calculates tips and totals. Demonstrates steps, floors, and parameter passing.</p>
+                <p><strong>Concepts:</strong> User input, steps with parameters, floors, function calls, number formatting</p>
+            </div>
+
+            <div class="example-structure">
+                <h3>Project Structure</h3>
+                <pre class="structure-tree"><code>tip_calculator/
+├── tip_calculator.building
+└── math/
+    ├── math.floor
+    ├── calculate_tip.step
+    └── round_to_cents.step</code></pre>
+            </div>
+
+            <div class="example-code">
+                <h3>tip_calculator.building</h3>
+                <pre class="code-window"><code><span class="keyword">building:</span> <span class="identifier">tip_calculator</span>
+    <span class="keyword">note:</span> <span class="comment">Calculate tip and total for a restaurant bill</span>
+
+    <span class="keyword">display</span> <span class="string">"Welcome to Tip Calculator!"</span>
+    <span class="keyword">display</span> <span class="string">""</span>
+
+    <span class="keyword">display</span> <span class="string">"Enter bill amount: $"</span>
+    <span class="keyword">set</span> <span class="identifier">bill_amount</span> <span class="keyword">to</span> <span class="keyword">input as number</span>
+
+    <span class="keyword">display</span> <span class="string">"Enter tip percentage (e.g., 15, 18, 20): "</span>
+    <span class="keyword">set</span> <span class="identifier">tip_percent</span> <span class="keyword">to</span> <span class="keyword">input as number</span>
+
+    <span class="keyword">call</span> <span class="identifier">calculate_tip</span> <span class="keyword">with</span> <span class="identifier">bill_amount</span>, <span class="identifier">tip_percent</span>
+        <span class="keyword">storing result in</span> <span class="identifier">tip_amount</span>
+
+    <span class="keyword">set</span> <span class="identifier">total</span> <span class="keyword">to</span> <span class="identifier">bill_amount</span> <span class="operator">+</span> <span class="identifier">tip_amount</span>
+
+    <span class="keyword">display</span> <span class="string">""</span>
+    <span class="keyword">display</span> <span class="string">"Bill:  $"</span> <span class="keyword">added to</span> (<span class="identifier">bill_amount</span> <span class="keyword">as text</span>)
+    <span class="keyword">display</span> <span class="string">"Tip:   $"</span> <span class="keyword">added to</span> (<span class="identifier">tip_amount</span> <span class="keyword">as text</span>)
+    <span class="keyword">display</span> <span class="string">"Total: $"</span> <span class="keyword">added to</span> (<span class="identifier">total</span> <span class="keyword">as text</span>)
+
+    <span class="keyword">exit</span></code></pre>
+
+                <h3>math/calculate_tip.step</h3>
+                <pre class="code-window"><code><span class="keyword">step:</span> <span class="identifier">calculate_tip</span>
+    <span class="keyword">belongs to:</span> <span class="identifier">math</span>
+    <span class="keyword">expects:</span> <span class="identifier">amount</span>, <span class="identifier">percent</span>
+    <span class="keyword">returns:</span> <span class="identifier">tip</span>
+
+    <span class="keyword">note:</span> <span class="comment">Calculate tip based on percentage</span>
+
+    <span class="keyword">riser:</span> <span class="identifier">calculate_percentage</span>
+        <span class="keyword">expects:</span> <span class="identifier">value</span>, <span class="identifier">pct</span>
+        <span class="keyword">returns:</span> <span class="identifier">result</span>
+
+        <span class="keyword">do:</span>
+            <span class="keyword">set</span> <span class="identifier">result</span> <span class="keyword">to</span> <span class="identifier">value</span> <span class="operator">*</span> (<span class="identifier">pct</span> <span class="operator">/</span> <span class="number">100</span>)
+            <span class="keyword">return</span> <span class="identifier">result</span>
+
+    <span class="keyword">declare:</span>
+        <span class="identifier">raw_tip</span> <span class="keyword">as number</span>
+
+    <span class="keyword">do:</span>
+        <span class="keyword">call</span> <span class="identifier">calculate_percentage</span> <span class="keyword">with</span> <span class="identifier">amount</span>, <span class="identifier">percent</span>
+            <span class="keyword">storing result in</span> <span class="identifier">raw_tip</span>
+        <span class="keyword">call</span> <span class="identifier">round_to_cents</span> <span class="keyword">with</span> <span class="identifier">raw_tip</span>
+            <span class="keyword">storing result in</span> <span class="identifier">tip</span>
+        <span class="keyword">return</span> <span class="identifier">tip</span></code></pre>
+            </div>
+
+            <div class="example-run">
+                <h3>How to Run</h3>
+                <pre class="code-block"><code>python -m steps.main run projects/tip_calculator/</code></pre>
+                <h4>Sample Session:</h4>
+                <pre class="output-block"><code>Welcome to Tip Calculator!
+
+Enter bill amount: $50.00
+Enter tip percentage (e.g., 15, 18, 20): 18
+
+Bill:  $50.0
+Tip:   $9.0
+Total: $59.0</code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>Steps can accept parameters with <code>expects:</code></li>
+                    <li>Steps can return values with <code>returns:</code></li>
+                    <li>Risers are private helpers within a step</li>
+                    <li>Floors organize related steps together</li>
+                    <li>Use <code>input as number</code> to get numeric input</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="example-detail">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 3: Price Calculator with Discount</h2>
+                <span class="difficulty-badge intermediate">Intermediate</span>
+            </div>
+
+            <div class="example-description">
+                <p>Calculate prices with quantity and discounts. Shows multiple steps working together.</p>
+                <p><strong>Concepts:</strong> Multiple steps, parameter passing, mathematical operations, floor organization</p>
+            </div>
+
+            <div class="example-structure">
+                <h3>Project Structure</h3>
+                <pre class="structure-tree"><code>price_calculator/
+├── price_calculator.building
+└── calculations/
+    ├── calculations.floor
+    ├── calculate_subtotal.step
+    └── apply_discount.step</code></pre>
+            </div>
+
+            <div class="example-code">
+                <h3>calculations/calculate_subtotal.step</h3>
+                <pre class="code-window"><code><span class="keyword">step:</span> <span class="identifier">calculate_subtotal</span>
+    <span class="keyword">belongs to:</span> <span class="identifier">calculations</span>
+    <span class="keyword">expects:</span> <span class="identifier">price</span>, <span class="identifier">quantity</span>
+    <span class="keyword">returns:</span> <span class="identifier">total</span>
+
+    <span class="keyword">do:</span>
+        <span class="keyword">set</span> <span class="identifier">total</span> <span class="keyword">to</span> <span class="identifier">price</span> <span class="operator">*</span> <span class="identifier">quantity</span>
+        <span class="keyword">return</span> <span class="identifier">total</span></code></pre>
+
+                <h3>calculations/apply_discount.step</h3>
+                <pre class="code-window"><code><span class="keyword">step:</span> <span class="identifier">apply_discount</span>
+    <span class="keyword">belongs to:</span> <span class="identifier">calculations</span>
+    <span class="keyword">expects:</span> <span class="identifier">amount</span>, <span class="identifier">percent</span>
+    <span class="keyword">returns:</span> <span class="identifier">discounted</span>
+
+    <span class="keyword">declare:</span>
+        <span class="identifier">discount</span> <span class="keyword">as number</span>
+
+    <span class="keyword">do:</span>
+        <span class="keyword">set</span> <span class="identifier">discount</span> <span class="keyword">to</span> <span class="identifier">amount</span> <span class="operator">*</span> (<span class="identifier">percent</span> <span class="operator">/</span> <span class="number">100</span>)
+        <span class="keyword">set</span> <span class="identifier">discounted</span> <span class="keyword">to</span> <span class="identifier">amount</span> <span class="operator">-</span> <span class="identifier">discount</span>
+        <span class="keyword">return</span> <span class="identifier">discounted</span></code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>Steps should be small and focused on one task</li>
+                    <li>Chain steps together to build complex functionality</li>
+                    <li>Use meaningful names that describe what the step does</li>
+                    <li>Group related steps in the same floor</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="example-detail alternate">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 4: Loops and Repetition</h2>
+                <span class="difficulty-badge beginner">Beginner</span>
+            </div>
+
+            <div class="example-description">
+                <p>From the tutorial - demonstrates all three types of loops in Steps.</p>
+                <p><strong>Concepts:</strong> repeat times, while loops, for each loops, counters, lists</p>
+            </div>
+
+            <div class="example-code">
+                <h3>Repeat a Fixed Number of Times</h3>
+                <pre class="code-window"><code><span class="keyword">set</span> <span class="identifier">counter</span> <span class="keyword">to</span> <span class="number">1</span>
+<span class="keyword">repeat</span> <span class="number">5</span> <span class="keyword">times</span>
+    <span class="keyword">display</span> (<span class="identifier">counter</span> <span class="keyword">as text</span>)
+    <span class="keyword">set</span> <span class="identifier">counter</span> <span class="keyword">to</span> <span class="identifier">counter</span> <span class="operator">+</span> <span class="number">1</span></code></pre>
+
+                <h3>While Loop with Condition</h3>
+                <pre class="code-window"><code><span class="keyword">set</span> <span class="identifier">countdown</span> <span class="keyword">to</span> <span class="number">5</span>
+<span class="keyword">while</span> <span class="identifier">countdown</span> <span class="keyword">is greater than</span> <span class="number">0</span>
+    <span class="keyword">display</span> (<span class="identifier">countdown</span> <span class="keyword">as text</span>)
+    <span class="keyword">set</span> <span class="identifier">countdown</span> <span class="keyword">to</span> <span class="identifier">countdown</span> <span class="operator">-</span> <span class="number">1</span>
+<span class="keyword">display</span> <span class="string">"Blast off!"</span></code></pre>
+
+                <h3>For Each with List</h3>
+                <pre class="code-window"><code><span class="keyword">set</span> <span class="identifier">fruits</span> <span class="keyword">to</span> [<span class="string">"apple"</span>, <span class="string">"banana"</span>, <span class="string">"cherry"</span>, <span class="string">"date"</span>]
+<span class="keyword">for each</span> <span class="identifier">fruit</span> <span class="keyword">in</span> <span class="identifier">fruits</span>
+    <span class="keyword">display</span> <span class="string">"- "</span> <span class="keyword">added to</span> <span class="identifier">fruit</span></code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>Use <code>repeat N times</code> when you know the count</li>
+                    <li>Use <code>while condition</code> for conditional looping</li>
+                    <li>Use <code>for each item in list</code> to process collections</li>
+                    <li>All loop types use clear, English-like syntax</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="example-detail">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 5: Working with Lists and Tables</h2>
+                <span class="difficulty-badge beginner">Beginner</span>
+            </div>
+
+            <div class="example-description">
+                <p>Store and manipulate collections of data.</p>
+                <p><strong>Concepts:</strong> Lists, tables (dictionaries), indexing, adding/removing items</p>
+            </div>
+
+            <div class="example-code">
+                <h3>Lists</h3>
+                <pre class="code-window"><code><span class="keyword">note:</span> <span class="comment">Create a list</span>
+<span class="keyword">set</span> <span class="identifier">colors</span> <span class="keyword">to</span> [<span class="string">"red"</span>, <span class="string">"green"</span>, <span class="string">"blue"</span>]
+
+<span class="keyword">note:</span> <span class="comment">Access by index (0-based)</span>
+<span class="keyword">set</span> <span class="identifier">first</span> <span class="keyword">to</span> <span class="identifier">colors</span>[<span class="number">0</span>]
+<span class="keyword">display</span> <span class="identifier">first</span>  <span class="keyword">note:</span> <span class="comment">Shows "red"</span>
+
+<span class="keyword">note:</span> <span class="comment">Add and remove items</span>
+<span class="keyword">add</span> <span class="string">"yellow"</span> <span class="keyword">to</span> <span class="identifier">colors</span>
+<span class="keyword">remove</span> <span class="string">"green"</span> <span class="keyword">from</span> <span class="identifier">colors</span>
+
+<span class="keyword">note:</span> <span class="comment">Check membership</span>
+<span class="keyword">if</span> <span class="string">"red"</span> <span class="keyword">is in</span> <span class="identifier">colors</span>
+    <span class="keyword">display</span> <span class="string">"Has red!"</span>
+
+<span class="keyword">note:</span> <span class="comment">Get length</span>
+<span class="keyword">set</span> <span class="identifier">count</span> <span class="keyword">to</span> <span class="keyword">length of</span> <span class="identifier">colors</span>
+<span class="keyword">display</span> <span class="string">"Number of colors: "</span> <span class="keyword">added to</span> (<span class="identifier">count</span> <span class="keyword">as text</span>)</code></pre>
+
+                <h3>Tables (Dictionaries)</h3>
+                <pre class="code-window"><code><span class="keyword">note:</span> <span class="comment">Create a table with key-value pairs</span>
+<span class="keyword">set</span> <span class="identifier">person</span> <span class="keyword">to</span> [<span class="string">"name"</span>: <span class="string">"Alice"</span>, <span class="string">"age"</span>: <span class="number">25</span>, <span class="string">"city"</span>: <span class="string">"Boston"</span>]
+
+<span class="keyword">note:</span> <span class="comment">Access values by key</span>
+<span class="keyword">set</span> <span class="identifier">name</span> <span class="keyword">to</span> <span class="identifier">person</span>[<span class="string">"name"</span>]
+<span class="keyword">display</span> <span class="identifier">name</span>  <span class="keyword">note:</span> <span class="comment">Shows "Alice"</span>
+
+<span class="keyword">note:</span> <span class="comment">Update or add new values</span>
+<span class="keyword">set</span> <span class="identifier">person</span>[<span class="string">"age"</span>] <span class="keyword">to</span> <span class="number">26</span>
+<span class="keyword">set</span> <span class="identifier">person</span>[<span class="string">"email"</span>] <span class="keyword">to</span> <span class="string">"alice@example.com"</span>
+
+<span class="keyword">note:</span> <span class="comment">Display all info</span>
+<span class="keyword">display</span> <span class="identifier">person</span>[<span class="string">"name"</span>] <span class="keyword">added to</span> <span class="string">" is "</span>
+    <span class="keyword">added to</span> (<span class="identifier">person</span>[<span class="string">"age"</span>] <span class="keyword">as text</span>)
+    <span class="keyword">added to</span> <span class="string">" years old"</span></code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li>Lists hold ordered collections: <code>[item1, item2, item3]</code></li>
+                    <li>Tables hold key-value pairs: <code>["key": value]</code></li>
+                    <li>Both use square brackets for access: <code>list[0]</code>, <code>table["key"]</code></li>
+                    <li>Lists are 0-indexed (first item is at position 0)</li>
+                    <li>Tables are perfect for structured data like records</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="example-detail alternate">
+        <div class="container">
+            <div class="example-header">
+                <h2>Example 6: Error Handling</h2>
+                <span class="difficulty-badge intermediate">Intermediate</span>
+            </div>
+
+            <div class="example-description">
+                <p>Handle errors gracefully with attempt blocks.</p>
+                <p><strong>Concepts:</strong> Error handling, attempt/unsuccessful/continue, problem_message variable</p>
+            </div>
+
+            <div class="example-code">
+                <h3>Basic Error Handling</h3>
+                <pre class="code-window"><code><span class="keyword">attempt:</span>
+    <span class="keyword">display</span> <span class="string">"Enter a number: "</span>
+    <span class="keyword">set</span> <span class="identifier">num</span> <span class="keyword">to</span> <span class="keyword">input as number</span>
+    <span class="keyword">set</span> <span class="identifier">result</span> <span class="keyword">to</span> <span class="number">100</span> <span class="operator">/</span> <span class="identifier">num</span>
+    <span class="keyword">display</span> <span class="string">"Result: "</span> <span class="keyword">added to</span> (<span class="identifier">result</span> <span class="keyword">as text</span>)
+<span class="keyword">if unsuccessful:</span>
+    <span class="keyword">display</span> <span class="string">"Error: "</span> <span class="keyword">added to</span> <span class="identifier">problem_message</span>
+    <span class="keyword">display</span> <span class="string">"Please enter a valid number."</span>
+<span class="keyword">then continue:</span>
+    <span class="keyword">display</span> <span class="string">"Operation complete."</span></code></pre>
+            </div>
+
+            <div class="example-takeaway">
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li><code>attempt:</code> block contains code that might fail</li>
+                    <li><code>if unsuccessful:</code> runs if an error occurs</li>
+                    <li><code>then continue:</code> always runs (like finally)</li>
+                    <li><code>problem_message</code> contains the error description</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="tutorial-examples">
+        <div class="container">
+            <h2>Complete Tutorial Examples</h2>
+            <p>The Steps installation includes a complete 11-lesson tutorial with runnable examples for every concept:</p>
+
+            <div class="tutorial-grid">
+                <div class="tutorial-item">
+                    <h3>Lesson 1</h3>
+                    <p>Getting Started</p>
+                    <code>lesson_01_hello/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 2</h3>
+                    <p>Variables and Data Types</p>
+                    <code>lesson_02_variables/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 3</h3>
+                    <p>User Input and Output</p>
+                    <code>lesson_03_input/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 4</h3>
+                    <p>Making Decisions</p>
+                    <code>lesson_04_decisions/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 5</h3>
+                    <p>Loops and Repetition</p>
+                    <code>lesson_05_loops/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 6</h3>
+                    <p>Working with Lists</p>
+                    <code>lesson_06_lists/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 7</h3>
+                    <p>Working with Tables</p>
+                    <code>lesson_07_tables/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 8</h3>
+                    <p>Creating Your First Step</p>
+                    <code>lesson_08_first_step/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 9</h3>
+                    <p>Steps with Parameters</p>
+                    <code>lesson_09_parameters/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 10</h3>
+                    <p>Organizing with Floors</p>
+                    <code>lesson_10_floors/</code>
+                </div>
+                <div class="tutorial-item">
+                    <h3>Lesson 11</h3>
+                    <p>Complete Project</p>
+                    <code>lesson_11_complete_project/</code>
+                </div>
+            </div>
+
+            <div class="tutorial-cta">
+                <p>All lessons are in <code>projects/tutorial/</code> with complete documentation in <code>docs/TUTORIAL.html</code></p>
+                <a href="docs/TUTORIAL.html" class="btn btn-primary">View Complete Tutorial</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="try-it-yourself">
+        <div class="container">
+            <h2>Try It Yourself</h2>
+            <p>Project Ideas to Build Your Own</p>
+
+            <div class="project-ideas">
+                <div class="idea-card">
+                    <h3>🧮 Calculator</h3>
+                    <p>Build a calculator with a menu for different operations.</p>
+                    <ul class="idea-features">
+                        <li>Add, subtract, multiply, divide</li>
+                        <li>Menu-driven interface</li>
+                        <li>Loops for multiple calculations</li>
+                        <li>Error handling for division by zero</li>
+                    </ul>
+                </div>
+
+                <div class="idea-card">
+                    <h3>🎯 Guessing Game</h3>
+                    <p>Number guessing game with hints and score tracking.</p>
+                    <ul class="idea-features">
+                        <li>Random number generation (use time-based seed)</li>
+                        <li>Loop until correct guess</li>
+                        <li>Hints (higher/lower)</li>
+                        <li>Track number of attempts</li>
+                    </ul>
+                </div>
+
+                <div class="idea-card">
+                    <h3>📝 Quiz Program</h3>
+                    <p>Interactive quiz with multiple questions and scoring.</p>
+                    <ul class="idea-features">
+                        <li>Store questions in a list</li>
+                        <li>Loop through questions</li>
+                        <li>Check answers and score</li>
+                        <li>Display final grade</li>
+                    </ul>
+                </div>
+
+                <div class="idea-card">
+                    <h3>📚 Contact Manager</h3>
+                    <p>Store and search contact information.</p>
+                    <ul class="idea-features">
+                        <li>Add, view, search contacts</li>
+                        <li>Use tables for contact records</li>
+                        <li>List to store all contacts</li>
+                        <li>Menu system for operations</li>
+                    </ul>
+                </div>
+
+                <div class="idea-card">
+                    <h3>💰 Budget Tracker</h3>
+                    <p>Track income and expenses.</p>
+                    <ul class="idea-features">
+                        <li>Add income and expenses</li>
+                        <li>Calculate total and balance</li>
+                        <li>Show spending by category</li>
+                        <li>Use tables and lists for data</li>
+                    </ul>
+                </div>
+
+                <div class="idea-card">
+                    <h3>🎲 Text Adventure</h3>
+                    <p>Choose-your-own-adventure game.</p>
+                    <ul class="idea-features">
+                        <li>Multiple floors for game areas</li>
+                        <li>Steps for different actions</li>
+                        <li>Decision trees with if/else</li>
+                        <li>Track player inventory</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Start Building?</h2>
+            <p>Install Steps and try these examples yourself</p>
+            <div class="cta-buttons">
+                <a href="getting-started.html" class="btn btn-primary btn-large">Get Started</a>
+                <a href="docs/TUTORIAL.html" class="btn btn-secondary btn-large">View Tutorial</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Steps Programming Language</h3>
+                    <p>An educational programming language that makes program structure visible and mandatory.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="features.html">Features</a></li>
+                        <li><a href="getting-started.html">Getting Started</a></li>
+                        <li><a href="examples.html">Examples</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="docs/TUTORIAL.html">Tutorial</a></li>
+                        <li><a href="docs/LANGUAGE-REFERENCE.html">Language Reference</a></li>
+                        <li><a href="docs/USER-GUIDE.html">User Guide</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p><strong>Chuck Finch</strong><br>
+                    Fragillidæ Software</p>
+                    <p>221 Walden Court<br>
+                    East Moriches, NY 11940</p>
+                    <p>Phone: <a href="tel:+16312769068">(631) 276-9068</a><br>
+                    Email: <a href="mailto:info@fragillidaesoftware.com">info@fragillidaesoftware.com</a></p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Fragillidæ Software. Licensed under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

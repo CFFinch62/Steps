@@ -1,0 +1,9 @@
+step: get_greeting
+    belongs to: helpers
+    expects: nothing
+    returns: message
+
+    do:
+        set message to "Welcome to Steps programming!"
+        return message
+

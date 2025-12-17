@@ -1,0 +1,13 @@
+# This is a test file for syntax highlighting
+note: This is a note comment
+
+building TestBuilding:
+    floor MainFloor:
+        step GreetUser:
+            riser "Hello, World!"
+            riser "Testing syntax highlighting"
+        
+        step Calculate:
+            riser "Adding numbers"
+            riser 1 + 2 + 3
+

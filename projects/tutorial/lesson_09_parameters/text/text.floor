@@ -1,0 +1,4 @@
+floor: text
+
+    step: greet_person
+
