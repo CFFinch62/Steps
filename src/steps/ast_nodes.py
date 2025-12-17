@@ -500,6 +500,32 @@ class TypeConversionNode(ExpressionNode):
 
 
 @dataclass
+class TypeOfNode(ExpressionNode):
+    """Get the type of an expression.
+    
+    Example: type of 42 → "number"
+    
+    Attributes:
+        expression: Expression to get type of
+    """
+    expression: ExpressionNode
+
+
+@dataclass
+class TypeCheckNode(ExpressionNode):
+    """Check if expression is of a specific type.
+    
+    Example: x is a number → true/false
+    
+    Attributes:
+        expression: Expression to check
+        type_name: Type to check for ("number", "text", "boolean", "list", "table")
+    """
+    expression: ExpressionNode
+    type_name: str
+
+
+@dataclass
 class TableAccessNode(ExpressionNode):
     """Table/list index access.
     
@@ -714,8 +740,15 @@ class ASTVisitor:
     def visit_TypeConversionNode(self, node: TypeConversionNode) -> Any:
         raise NotImplementedError
     
+    def visit_TypeOfNode(self, node: 'TypeOfNode') -> Any:
+        raise NotImplementedError
+    
+    def visit_TypeCheckNode(self, node: 'TypeCheckNode') -> Any:
+        raise NotImplementedError
+    
     def visit_TableAccessNode(self, node: TableAccessNode) -> Any:
         raise NotImplementedError
+
     
     # Expression nodes - Text operations
     def visit_AddedToNode(self, node: AddedToNode) -> Any:

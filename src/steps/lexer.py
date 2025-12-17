@@ -96,6 +96,14 @@ class TokenType(Enum):
     FROM = auto()              # "from"
     IS_IN = auto()             # "is in"
     
+    # Type checking
+    TYPE_OF = auto()           # "type of"
+    IS_A_NUMBER = auto()       # "is a number"
+    IS_A_TEXT = auto()         # "is a text"
+    IS_A_BOOLEAN = auto()      # "is a boolean"
+    IS_A_LIST = auto()         # "is a list"
+    IS_A_TABLE = auto()        # "is a table"
+    
     # Operators - Math
     PLUS = auto()              # "+"
     MINUS = auto()             # "-"
@@ -164,6 +172,11 @@ MULTI_WORD_KEYWORDS: List[Tuple[str, TokenType]] = [
     ("then continue:", TokenType.THEN_CONTINUE),
     ("is greater than", TokenType.IS_GREATER_THAN),
     ("is less than", TokenType.IS_LESS_THAN),
+    ("is a boolean", TokenType.IS_A_BOOLEAN),
+    ("is a number", TokenType.IS_A_NUMBER),
+    ("is a table", TokenType.IS_A_TABLE),
+    ("is a list", TokenType.IS_A_LIST),
+    ("is a text", TokenType.IS_A_TEXT),
     ("is equal to", TokenType.IS_EQUAL_TO),
     ("character at", TokenType.CHARACTER_AT),
     ("otherwise if", TokenType.OTHERWISE_IF),
@@ -172,6 +185,7 @@ MULTI_WORD_KEYWORDS: List[Tuple[str, TokenType]] = [
     ("starts with", TokenType.STARTS_WITH),
     ("ends with", TokenType.ENDS_WITH),
     ("length of", TokenType.LENGTH_OF),
+    ("type of", TokenType.TYPE_OF),
     ("for each", TokenType.FOR_EACH),
     ("added to", TokenType.ADDED_TO),
     ("split by", TokenType.SPLIT_BY),

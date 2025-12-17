@@ -21,7 +21,7 @@ from .ast_nodes import (
     # Expression nodes
     ExpressionNode, NumberLiteral, TextLiteral, BooleanLiteral, NothingLiteral,
     ListLiteral, TableLiteral, IdentifierNode, InputNode,
-    BinaryOpNode, UnaryOpNode, TypeConversionNode, TableAccessNode,
+    BinaryOpNode, UnaryOpNode, TypeConversionNode, TypeOfNode, TypeCheckNode, TableAccessNode,
     AddedToNode, SplitByNode, CharacterAtNode, LengthOfNode,
     ContainsNode, StartsWithNode, EndsWithNode, IsInNode,
 )
@@ -518,6 +518,14 @@ class Interpreter:
         if isinstance(expr, TypeConversionNode):
             return self._eval_type_conversion(expr)
         
+        # Type of expression
+        if isinstance(expr, TypeOfNode):
+            return self._eval_type_of(expr)
+        
+        # Type check expression
+        if isinstance(expr, TypeCheckNode):
+            return self._eval_type_check(expr)
+        
         # Collection access
         if isinstance(expr, TableAccessNode):
             return self._eval_table_access(expr)
@@ -656,11 +664,23 @@ class Interpreter:
             hint="Valid types are: number, text, boolean."
         )
     
+    def _eval_type_of(self, expr: TypeOfNode) -> StepsValue:
+        """Evaluate: type of expression → returns type name as text."""
+        value = self.evaluate_expression(expr.expression)
+        return StepsText(value.type_name())
+    
+    def _eval_type_check(self, expr: TypeCheckNode) -> StepsValue:
+        """Evaluate: expression is a type → returns boolean."""
+        value = self.evaluate_expression(expr.expression)
+        actual_type = value.type_name()
+        return StepsBoolean(actual_type == expr.type_name)
+    
     def _eval_table_access(self, expr: TableAccessNode) -> StepsValue:
         """Evaluate table/list access."""
         table = self.evaluate_expression(expr.table)
         key = self.evaluate_expression(expr.key)
         return builtins.table_get(table, key, expr.location)
+
 
 
 # =============================================================================

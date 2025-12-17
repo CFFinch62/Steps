@@ -27,7 +27,7 @@ from .ast_nodes import (
     # Expression nodes
     ExpressionNode, NumberLiteral, TextLiteral, BooleanLiteral, NothingLiteral,
     ListLiteral, TableLiteral, IdentifierNode, InputNode,
-    BinaryOpNode, UnaryOpNode, TypeConversionNode, TableAccessNode,
+    BinaryOpNode, UnaryOpNode, TypeConversionNode, TypeOfNode, TypeCheckNode, TableAccessNode,
     AddedToNode, SplitByNode, CharacterAtNode, LengthOfNode,
     ContainsNode, StartsWithNode, EndsWithNode, IsInNode,
 )
@@ -978,6 +978,23 @@ class Parser:
                     operator=op_str,
                     right=right
                 )
+        # Type check operators (postfix): expr is a number, expr is a text, etc.
+        type_check_ops = {
+            TokenType.IS_A_NUMBER: "number",
+            TokenType.IS_A_TEXT: "text",
+            TokenType.IS_A_BOOLEAN: "boolean",
+            TokenType.IS_A_LIST: "list",
+            TokenType.IS_A_TABLE: "table",
+        }
+        
+        for token_type, type_name in type_check_ops.items():
+            if self.match(token_type):
+                op = self.previous
+                return TypeCheckNode(
+                    location=self.location_from(op),
+                    expression=left,
+                    type_name=type_name
+                )
         
         return left
     
@@ -1084,6 +1101,15 @@ class Parser:
                 location=self.location_from(op),
                 index=index,
                 text=text
+            )
+        
+        # type of expr
+        if self.match(TokenType.TYPE_OF):
+            op = self.previous
+            operand = self.parse_unary()
+            return TypeOfNode(
+                location=self.location_from(op),
+                expression=operand
             )
         
         return self.parse_postfix()
