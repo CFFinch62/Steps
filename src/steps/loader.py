@@ -121,7 +121,10 @@ class Loader:
         building_node = cast(BuildingNode, building_result.ast)
         environment.building_name = building_node.name
 
-        # Load all floors and steps
+        # Load standard library first (project floors can override)
+        self._load_stdlib(environment)
+
+        # Load all project floors and steps
         floor_dirs = [d for d in self.project_path.iterdir() if d.is_dir()]
         for floor_dir in floor_dirs:
             floor_file = floor_dir / f"{floor_dir.name}.floor"
@@ -133,6 +136,29 @@ class Loader:
 
         result.building = building_node
         return result
+    
+    def _get_stdlib_path(self) -> Path:
+        """Get path to the bundled standard library."""
+        return Path(__file__).parent / "stdlib"
+    
+    def _load_stdlib(self, environment: Environment) -> None:
+        """Load the standard library floors.
+        
+        The stdlib is loaded first, so project floors can override
+        stdlib definitions if they use the same names.
+        """
+        stdlib_path = self._get_stdlib_path()
+        if not stdlib_path.exists():
+            return  # No stdlib bundled, that's okay
+        
+        # Load each floor in stdlib
+        for floor_dir in stdlib_path.iterdir():
+            if floor_dir.is_dir():
+                floor_file = floor_dir / f"{floor_dir.name}.floor"
+                if floor_file.exists():
+                    # Silently load stdlib floors (no error propagation)
+                    self._load_floor(floor_file, floor_dir, environment)
+
     
     def _load_building(self, path: Path) -> ParseResult:
         """Load and parse a building file."""

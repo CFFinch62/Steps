@@ -1,0 +1,76 @@
+step: uppercase
+    belongs to: strings
+    expects: s as text
+    returns: result as text
+
+    declare:
+        i as number
+        char as text
+        output as text
+        code as number
+
+    do:
+        set output to ""
+        set i to 0
+        
+        repeat length of s times
+            set char to character at i of s
+            note: Check if lowercase a-z (ASCII 97-122)
+            note: For now, do simple char-by-char check
+            if char equals "a"
+                set char to "A"
+            otherwise if char equals "b"
+                set char to "B"
+            otherwise if char equals "c"
+                set char to "C"
+            otherwise if char equals "d"
+                set char to "D"
+            otherwise if char equals "e"
+                set char to "E"
+            otherwise if char equals "f"
+                set char to "F"
+            otherwise if char equals "g"
+                set char to "G"
+            otherwise if char equals "h"
+                set char to "H"
+            otherwise if char equals "i"
+                set char to "I"
+            otherwise if char equals "j"
+                set char to "J"
+            otherwise if char equals "k"
+                set char to "K"
+            otherwise if char equals "l"
+                set char to "L"
+            otherwise if char equals "m"
+                set char to "M"
+            otherwise if char equals "n"
+                set char to "N"
+            otherwise if char equals "o"
+                set char to "O"
+            otherwise if char equals "p"
+                set char to "P"
+            otherwise if char equals "q"
+                set char to "Q"
+            otherwise if char equals "r"
+                set char to "R"
+            otherwise if char equals "s"
+                set char to "S"
+            otherwise if char equals "t"
+                set char to "T"
+            otherwise if char equals "u"
+                set char to "U"
+            otherwise if char equals "v"
+                set char to "V"
+            otherwise if char equals "w"
+                set char to "W"
+            otherwise if char equals "x"
+                set char to "X"
+            otherwise if char equals "y"
+                set char to "Y"
+            otherwise if char equals "z"
+                set char to "Z"
+            
+            set output to output added to char
+            set i to i + 1
+        
+        return output

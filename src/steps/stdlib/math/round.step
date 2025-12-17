@@ -1,0 +1,27 @@
+step: round
+    belongs to: math
+    expects: n as number
+    returns: result as number
+
+    declare:
+        floor_val as number
+        ceil_val as number
+        diff_floor as number
+        diff_ceil as number
+
+    do:
+        note: Calculate floor and ceiling manually
+        set floor_val to n - (n - (n as text split by "." )[0] as number)
+        set ceil_val to floor_val + 1
+        
+        note: Return whichever is closer
+        set diff_floor to n - floor_val
+        set diff_ceil to ceil_val - n
+        
+        if diff_floor is less than diff_ceil
+            return floor_val
+        otherwise if diff_ceil is less than diff_floor
+            return ceil_val
+        otherwise
+            note: If equal, round up (banker's rounding could be added later)
+            return ceil_val

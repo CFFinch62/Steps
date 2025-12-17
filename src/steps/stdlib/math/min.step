@@ -1,0 +1,10 @@
+step: min
+    belongs to: math
+    expects: a as number, b as number
+    returns: result as number
+
+    do:
+        if a is less than b
+            return a
+        otherwise
+            return b

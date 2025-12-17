@@ -1,0 +1,6 @@
+floor: strings
+    step: uppercase
+    step: lowercase
+    step: trim
+    step: reverse
+    step: repeat_text

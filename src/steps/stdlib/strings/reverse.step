@@ -1,0 +1,18 @@
+step: reverse
+    belongs to: strings
+    expects: s as text
+    returns: result as text
+
+    declare:
+        i as number
+        output as text
+
+    do:
+        set output to ""
+        set i to length of s - 1
+        
+        repeat while i is greater than or equal to 0
+            set output to output added to character at i of s
+            set i to i - 1
+        
+        return output

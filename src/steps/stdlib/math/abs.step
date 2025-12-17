@@ -1,0 +1,10 @@
+step: abs
+    belongs to: math
+    expects: n as number
+    returns: result as number
+
+    do:
+        if n is less than 0
+            return n * -1
+        otherwise
+            return n

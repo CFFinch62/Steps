@@ -1,0 +1,17 @@
+step: repeat_text
+    belongs to: strings
+    expects: s as text, count as number
+    returns: result as text
+
+    declare:
+        i as number
+        output as text
+
+    do:
+        set output to ""
+        set i to 0
+        
+        repeat count times
+            set output to output added to s
+        
+        return output
