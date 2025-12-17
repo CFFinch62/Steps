@@ -23,6 +23,7 @@ Version 1.0
 13. [Comments](#13-comments)
 14. [Reserved Words](#14-reserved-words)
 15. [File Extensions](#15-file-extensions)
+16. [Standard Library](#16-standard-library)
 
 ---
 
@@ -846,6 +847,10 @@ true  false  nothing
 problem_message
 ```
 
+> [!CAUTION]
+> **Reserved words cannot be used as:** floor names, step names, parameter names, or variable names.
+> For example, `text` and `times` are keywords and will cause parse errors if used as identifiers.
+
 ---
 
 ## 15. File Extensions
@@ -1039,6 +1044,40 @@ step: round_to_cents
         set rounded to amount
         return rounded
 ```
+
+---
+
+## 16. Standard Library
+
+Steps includes a bundled standard library that's automatically available to all buildings.
+
+### Math Functions
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `abs` | `n as number` | `number` | Absolute value |
+| `max` | `a, b as number` | `number` | Larger of two |
+| `min` | `a, b as number` | `number` | Smaller of two |
+| `round` | `n as number` | `number` | Round to nearest |
+
+### Strings Functions
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `uppercase` | `s as text` | `text` | To uppercase |
+| `lowercase` | `s as text` | `text` | To lowercase |
+| `trim` | `s as text` | `text` | Remove whitespace |
+| `reverse` | `s as text` | `text` | Reverse text |
+| `repeat_text` | `s, count` | `text` | Repeat N times |
+
+### Example
+
+```steps
+call abs with -5 storing result in x      # 5
+call reverse with "hello" storing result in r   # "olleh"
+```
+
+> **See also:** [STDLIB.md](STDLIB.md) for complete documentation.
 
 ---
 
