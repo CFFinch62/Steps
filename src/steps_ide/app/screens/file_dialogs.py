@@ -100,8 +100,8 @@ class OpenFileDialog(FileDialog):
         super().__init__("Open File")
 
 class SaveFileDialog(FileDialog):
-    def __init__(self):
-        super().__init__("Save File")
+    def __init__(self, initial_path: str | None = None):
+        super().__init__("Save File", initial_path)
 
 
 class ConfirmCloseDialog(ModalScreen[str]):

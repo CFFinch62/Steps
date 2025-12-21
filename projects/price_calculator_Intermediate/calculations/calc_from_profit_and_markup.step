@@ -1,0 +1,24 @@
+step: calc_from_profit_and_markup
+    belongs to: calculations
+    expects: nothing
+    returns: results as table
+
+    declare:
+        profit as number fixed
+        markup as number fixed
+        price as number
+        margin as number
+        cost as number
+        results as table
+
+    do:
+        call get_number_input with "Enter Profit: " storing result in profit
+        call get_number_input with "Enter Markup: " storing result in markup
+
+        set cost to profit / (markup / 100)
+        set price to cost + profit
+        set margin to (profit / price) * 100
+
+        call pack_results with price, margin, profit, markup, cost storing result in results
+
+        return results

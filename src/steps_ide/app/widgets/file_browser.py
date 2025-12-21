@@ -67,11 +67,67 @@ class NewFolderDialog(ModalScreen[str]):
                 self.dismiss(folder_name)
 
 
-class DeleteFolderDialog(ModalScreen[bool]):
-    """Dialog to confirm folder deletion."""
+class RenameItemDialog(ModalScreen[str]):
+    """Dialog to rename a file or folder."""
 
     DEFAULT_CSS = """
-    DeleteFolderDialog {
+    RenameItemDialog {
+        align: center middle;
+    }
+    #dialog-container {
+        width: 50;
+        height: auto;
+        border: solid $accent;
+        background: $surface;
+        padding: 1 2;
+    }
+    #message {
+        margin: 1 0;
+    }
+    #name-input {
+        margin: 1 0;
+    }
+    #buttons {
+        height: auto;
+        align: center middle;
+        margin-top: 1;
+    }
+    Button {
+        margin: 0 1;
+    }
+    """
+
+    def __init__(self, current_name: str):
+        super().__init__()
+        self.current_name = current_name
+
+    def compose(self):
+        with Vertical(id="dialog-container"):
+            yield Label(f"Rename '{self.current_name}' to:", id="message")
+            yield Input(value=self.current_name, id="name-input")
+            with Horizontal(id="buttons"):
+                yield Button("Cancel", variant="default", id="cancel")
+                yield Button("Rename", variant="primary", id="rename")
+
+    def on_mount(self):
+        self.query_one(Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "cancel":
+            self.dismiss(None)
+        elif event.button.id == "rename":
+            new_name = self.query_one(Input).value.strip()
+            if new_name and new_name != self.current_name:
+                self.dismiss(new_name)
+            else:
+                self.dismiss(None)
+
+
+class DeleteItemDialog(ModalScreen[bool]):
+    """Dialog to confirm deletion of file or folder."""
+
+    DEFAULT_CSS = """
+    DeleteItemDialog {
         align: center middle;
     }
     #dialog-container {
@@ -100,14 +156,16 @@ class DeleteFolderDialog(ModalScreen[bool]):
     }
     """
 
-    def __init__(self, folder_path: str):
+    def __init__(self, item_path: str, is_dir: bool):
         super().__init__()
-        self.folder_path = folder_path
+        self.item_path = item_path
+        self.is_dir = is_dir
 
     def compose(self):
+        item_type = "folder" if self.is_dir else "file"
         with Vertical(id="dialog-container"):
-            yield Label(f"Delete folder?", id="message")
-            yield Label(self.folder_path, id="path-display")
+            yield Label(f"Delete {item_type}?", id="message")
+            yield Label(Path(self.item_path).name, id="path-display")
             yield Label("⚠️  This action cannot be undone!", id="warning")
             with Horizontal(id="buttons"):
                 yield Button("Cancel", variant="default", id="cancel")
@@ -174,9 +232,10 @@ class FileBrowser(Widget):
     """
 
     BINDINGS = [
-        Binding("r", "refresh", "Refresh", show=False),
-        Binding("n", "new_folder", "New Folder", show=False),
-        Binding("delete", "delete_folder", "Delete", show=False),
+        Binding("r", "refresh", "Refresh", show=True),
+        Binding("n", "new_folder", "New Folder", show=True),
+        Binding("delete", "delete_item", "Delete", show=True),
+        Binding("f2", "rename_item", "Rename", show=True),
     ]
 
     class FileSelected(Message):
@@ -287,19 +346,15 @@ class FileBrowser(Widget):
 
         self.app.push_screen(NewFolderDialog(parent_dir), handle_result)
 
-    def action_delete_folder(self) -> None:
-        """Delete the currently selected folder."""
+    def action_delete_item(self) -> None:
+        """Delete the currently selected file or folder."""
         tree = self.query_one(FilteredDirectoryTree)
         if not tree.cursor_node:
-            self.app.notify("No folder selected", severity="warning")
+            self.app.notify("No item selected", severity="warning")
             return
 
         cursor_path = Path(str(tree.cursor_node.data.path))
-
-        # Only allow deleting directories
-        if not cursor_path.is_dir():
-            self.app.notify("Please select a folder to delete", severity="warning")
-            return
+        is_dir = cursor_path.is_dir()
 
         # Don't allow deleting the root path
         if str(cursor_path) == self.root_path:
@@ -309,15 +364,45 @@ class FileBrowser(Widget):
         def handle_result(confirmed: bool):
             if confirmed:
                 try:
-                    shutil.rmtree(cursor_path)
+                    if is_dir:
+                        shutil.rmtree(cursor_path)
+                    else:
+                        os.remove(cursor_path)
+                    
                     # Refresh the tree
-                    tree = self.query_one(FilteredDirectoryTree)
                     tree.reload()
-                    self.app.notify(f"Deleted folder: {cursor_path.name}")
+                    self.app.notify(f"Deleted {'folder' if is_dir else 'file'}: {cursor_path.name}")
                 except Exception as e:
-                    self.app.notify(f"Error deleting folder: {e}", severity="error")
+                    self.app.notify(f"Error deleting item: {e}", severity="error")
 
-        self.app.push_screen(DeleteFolderDialog(str(cursor_path)), handle_result)
+        self.app.push_screen(DeleteItemDialog(str(cursor_path), is_dir), handle_result)
+        
+    def action_rename_item(self) -> None:
+        """Rename the currently selected file or folder."""
+        tree = self.query_one(FilteredDirectoryTree)
+        if not tree.cursor_node:
+            self.app.notify("No item selected", severity="warning")
+            return
+
+        cursor_path = Path(str(tree.cursor_node.data.path))
+        
+        # Don't allow renaming the root path
+        if str(cursor_path) == self.root_path:
+            self.app.notify("Cannot rename the root directory", severity="error")
+            return
+
+        def handle_result(new_name: str | None):
+            if new_name:
+                new_path = cursor_path.parent / new_name
+                try:
+                    os.rename(cursor_path, new_path)
+                    # Refresh the tree
+                    tree.reload()
+                    self.app.notify(f"Renamed to: {new_name}")
+                except Exception as e:
+                    self.app.notify(f"Error renaming item: {e}", severity="error")
+
+        self.app.push_screen(RenameItemDialog(cursor_path.name), handle_result)
 
     def action_refresh(self) -> None:
         """Refresh the directory tree."""

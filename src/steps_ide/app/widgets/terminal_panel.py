@@ -88,6 +88,8 @@ class TerminalPanel(Widget):
         self._command_history: list[str] = []
         self._history_index = -1
         self._running_process: asyncio.subprocess.Process | None = None
+        self._input_mode = False
+        self._input_callback = None
 
     def compose(self):
         yield Static(self._get_header(), id="terminal-header")
@@ -116,19 +118,25 @@ class TerminalPanel(Widget):
         if event.input.id != "terminal-input":
             return
 
-        command = event.value.strip()
-        if not command:
+        value = event.value.strip()
+        if not value and not self._input_mode:
             return
 
         # Clear input
         event.input.value = ""
+        
+        # Check for input mode
+        if self._input_mode:
+            self._handle_input_submission(value)
+            return
 
         # Add to history
-        self._command_history.append(command)
+        self._command_history.append(value)
         self._history_index = len(self._command_history)
 
         # Execute command
-        await self._execute_command(command)
+        await self._execute_command(value)
+
 
     async def _execute_command(self, command: str):
         """Execute a shell command and display output."""
@@ -287,4 +295,45 @@ class TerminalPanel(Widget):
                 input_widget.value = ""
             event.prevent_default()
             event.stop()
+
+    # Input Mode Support
+
+    def request_input(self, prompt: str, callback):
+        """Request input from the user via the terminal.
+
+        Args:
+            prompt: The prompt to display.
+            callback: Function to call with the user's input.
+        """
+        self._input_mode = True
+        self._input_callback = callback
+        
+        # Show prompt if provided
+        if prompt:
+            self.write_output(prompt)
+        
+        # Focus input
+        self.focus_input()
+        
+        # Update placeholder to indicate input mode
+        input_widget = self.query_one("#terminal-input", Input)
+        input_widget.placeholder = "Enter input..."
+
+    def _handle_input_submission(self, value: str):
+        """Handle submission when in input mode."""
+        self.write_output(f"> {value}")
+        
+        callback = self._input_callback
+        
+        # Reset mode
+        self._input_mode = False
+        self._input_callback = None
+        
+        input_widget = self.query_one("#terminal-input", Input)
+        input_widget.placeholder = "Enter command..."
+        
+        # Call callback
+        if callback:
+            callback(value)
+
 

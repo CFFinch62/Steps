@@ -48,25 +48,12 @@ class MainScreen(Screen):
     """
 
     BINDINGS = [
-        Binding("ctrl+o", "open_file", "Open", priority=True),
-        Binding("ctrl+s", "save_file", "Save", priority=True),
-        Binding("ctrl+t", "new_file", "New Tab", priority=True),
-        Binding("ctrl+w", "close_buffer", "Close", priority=True),
         Binding("ctrl+b", "toggle_file_browser", "Browser", priority=True),
         Binding("f4", "toggle_project_browser", "Project", priority=True),
         Binding("ctrl+j", "toggle_terminal", "Terminal", priority=True),
-        # Steps interpreter commands
-        Binding("f5", "run_steps", "Run", priority=True),
-        Binding("f6", "check_steps", "Check", priority=True),
         # Project operations (hidden from footer, accessible via command palette)
         Binding("ctrl+shift+n", "new_project", "New Project", show=False, priority=True),
         Binding("escape", "focus_editor", "Focus Editor", show=False, priority=True),
-        # Tab navigation: ctrl+pagedown/pageup are standard in many editors
-        Binding("ctrl+pagedown", "next_buffer", "Next Tab", show=False, priority=True),
-        Binding("ctrl+pageup", "prev_buffer", "Prev Tab", show=False, priority=True),
-        # F7/F8 as fallback for next/prev tab
-        Binding("f8", "next_buffer", "Next Tab", show=False, priority=True),
-        Binding("f7", "prev_buffer", "Prev Tab", show=False, priority=True),
         Binding("alt+1", "buffer_1", "Tab 1", show=False, priority=True),
         Binding("alt+2", "buffer_2", "Tab 2", show=False, priority=True),
         Binding("alt+3", "buffer_3", "Tab 3", show=False, priority=True),
@@ -240,7 +227,22 @@ class MainScreen(Screen):
                 if buffer:
                     self._save_buffer(buffer, path)
 
-        self.app.push_screen(SaveFileDialog(), save_file_callback)
+        # Determine initial path
+        initial_path = os.getcwd() # Default
+        
+        # Try to use active buffer's directory
+        buffer = self.buffer_manager.active_buffer
+        if buffer and buffer.path:
+             initial_path = os.path.dirname(buffer.path)
+        # Or try to use file browser's selected directory
+        else:
+             try:
+                 file_browser = self.query_one(FileBrowser)
+                 initial_path = file_browser._get_current_directory()
+             except Exception:
+                 pass
+        
+        self.app.push_screen(SaveFileDialog(initial_path=initial_path), save_file_callback)
 
     def _save_buffer(self, buffer: Buffer, path: str) -> None:
         """Save buffer to file."""
@@ -258,8 +260,14 @@ class MainScreen(Screen):
             self.update_status_bar(path=path, modified=False)
             self.notify(f"Saved {path}")
 
-            # Refresh project browser if a Steps file was saved
+            # Refresh sensitive UI elements
             self._refresh_project_browser_if_steps_file(path)
+            
+            # Refresh file browser to show new files (if added)
+            try:
+                self.query_one(FileBrowser).action_refresh()
+            except Exception:
+                pass # safely ignore if file browser not found or fails
         else:
             self.notify(f"Failed to save {path}", severity="error")
 
@@ -646,9 +654,13 @@ class MainScreen(Screen):
                             response_queue.put(user_input)
                             input_future.set_result(user_input)
 
-                        # Show input dialog with callback
-                        self.app.push_screen(
-                            StepsInputDialog(prompt if prompt else "Enter input:"),
+                        # Request input from terminal
+                        # If we have a prompt (which comes from last_output), it's already in the terminal.
+                        # So we pass an empty string to avoid duplication.
+                        # If no prompt (empty last_output), we show a default prompt.
+                        terminal_prompt = "" if prompt else "Enter input:"
+                        terminal.request_input(
+                            terminal_prompt,
                             on_input_received
                         )
 
@@ -853,3 +865,39 @@ class MainScreen(Screen):
                 self._switch_to_buffer(buffer)
         # Return focus to editor
         self.query_one(StepsEditor).focus()
+
+    async def on_steps_editor_run_requested(self, message: StepsEditor.RunRequested) -> None:
+        """Handle run request from editor."""
+        self.action_run_steps()
+        
+    async def on_steps_editor_check_requested(self, message: StepsEditor.CheckRequested) -> None:
+        """Handle check request from editor."""
+        self.action_check_steps()
+
+    async def on_steps_editor_save_requested(self, message: StepsEditor.SaveRequested) -> None:
+        """Handle save request from editor."""
+        self.action_save_file()
+        
+    async def on_steps_editor_open_requested(self, message: StepsEditor.OpenRequested) -> None:
+        """Handle open request from editor."""
+        self.action_open_file()
+        
+    async def on_steps_editor_new_file_requested(self, message: StepsEditor.NewFileRequested) -> None:
+        """Handle new file request from editor."""
+        self.action_new_file()
+        
+    async def on_steps_editor_close_buffer_requested(self, message: StepsEditor.CloseBufferRequested) -> None:
+        """Handle close buffer request from editor."""
+        self.action_close_buffer()
+        
+    async def on_steps_editor_next_buffer_requested(self, message: StepsEditor.NextBufferRequested) -> None:
+        """Handle next buffer request from editor."""
+        self.action_next_buffer()
+        
+    async def on_steps_editor_prev_buffer_requested(self, message: StepsEditor.PrevBufferRequested) -> None:
+        """Handle prev buffer request from editor."""
+        self.action_prev_buffer()
+
+    def action_quit(self) -> None:
+        """Quit the application."""
+        self.app.exit()
