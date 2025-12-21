@@ -32,12 +32,8 @@ echo "📥 Installing Steps package..."
 pip install -e .
 
 # Install IDE dependencies
-echo "📥 Installing IDE dependencies (textual, watchfiles)..."
-pip install textual watchfiles
-
-# Install tree-sitter-steps for syntax highlighting
-echo "📥 Installing tree-sitter-steps for syntax highlighting..."
-pip install -e tree-sitter-steps/
+echo "📥 Installing IDE dependencies (PyQt6, PyQt6-WebEngine)..."
+pip install PyQt6 PyQt6-WebEngine
 
 # Install development dependencies (optional)
 read -p "Install development dependencies (pytest, mypy, black, isort)? [y/N] " -n 1 -r

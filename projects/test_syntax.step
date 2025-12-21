@@ -1,7 +1,6 @@
-# This is a test file for syntax highlighting
 note: This is a note comment
 
-building TestBuilding:
+building: TestBuilding
     floor MainFloor:
         step GreetUser:
             riser "Hello, World!"

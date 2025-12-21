@@ -31,7 +31,10 @@ classifiers = [
     "Topic :: Education",
     "Topic :: Software Development :: Interpreters",
 ]
-dependencies = []
+dependencies = [
+    "PyQt6>=6.5.0",
+    "PyQt6-WebEngine>=6.5.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -41,9 +44,15 @@ dev = [
     "black>=23.0",
     "isort>=5.0",
 ]
+ide = [
+    "PyQt6>=6.5.0",
+    "PyQt6-WebEngine>=6.5.0",
+    "pywinpty>=2.0.0; sys_platform == 'win32'",
+]
 
 [project.scripts]
 steps = "steps.main:main"
+steps-ide = "steps_ide.main:main"
 
 [project.urls]
 Homepage = "https://github.com/username/steps-lang"
@@ -52,7 +61,7 @@ Repository = "https://github.com/username/steps-lang"
 Issues = "https://github.com/username/steps-lang/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/steps"]
+packages = ["src/steps", "src/steps_ide"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

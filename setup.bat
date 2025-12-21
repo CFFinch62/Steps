@@ -50,18 +50,10 @@ if errorlevel 1 (
 )
 
 REM Install IDE dependencies
-echo Installing IDE dependencies (textual, watchfiles)...
-pip install textual watchfiles
+echo Installing IDE dependencies (PyQt6, pywinpty)...
+pip install PyQt6 pywinpty
 if errorlevel 1 (
     echo Failed to install IDE dependencies
-    exit /b 1
-)
-
-REM Install tree-sitter-steps for syntax highlighting
-echo Installing tree-sitter-steps for syntax highlighting...
-pip install -e tree-sitter-steps/
-if errorlevel 1 (
-    echo Failed to install tree-sitter-steps
     exit /b 1
 )
 
