@@ -107,11 +107,57 @@ class Environment:
         # Execution context
         self.current_step: Optional[str] = None
         self.current_floor: Optional[str] = None
-        self.call_stack: List[str] = []  # For recursion detection
+        # Call stack tracks (name, location) pairs for debugger
+        self._call_stack_entries: List[tuple] = []  # List of (name, SourceLocation)
         
         # Input/output handlers (can be overridden for testing)
         self.input_handler: Callable[[], str] = input
         self.output_handler: Callable[[str], None] = print
+    
+    # =========================================================================
+    # Debugger Introspection Methods
+    # =========================================================================
+    
+    def get_scope_variables(self, scope_index: int) -> Dict[str, Any]:
+        """Get variables from a specific scope for debugger display.
+        
+        Args:
+            scope_index: Index of scope (0 = global/building scope)
+            
+        Returns:
+            Dictionary of variable name -> value
+        """
+        if scope_index < 0 or scope_index >= len(self.scope_stack):
+            return {}
+        
+        scope = self.scope_stack[scope_index]
+        return dict(scope.variables)
+    
+    def get_all_scope_variables(self) -> List[Dict[str, Any]]:
+        """Get all variables organized by scope for debugger.
+        
+        Returns:
+            List of scope dictionaries, index 0 is global scope
+        """
+        result = []
+        for scope in self.scope_stack:
+            result.append(dict(scope.variables))
+        return result
+    
+    def get_call_stack(self) -> List[tuple]:
+        """Get the call stack for debugger display.
+        
+        Returns:
+            List of (step_name, SourceLocation) tuples
+        """
+        return list(self._call_stack_entries)
+    
+    @property
+    def call_stack(self) -> List[str]:
+        """Get call stack as list of names (backwards compatibility)."""
+        return [name for name, _ in self._call_stack_entries]
+
+
     
     # =========================================================================
     # Scope Management
@@ -291,27 +337,32 @@ class Environment:
     # Execution Context
     # =========================================================================
     
-    def enter_step(self, step_name: str) -> None:
-        """Mark entering a step (for call stack tracking)."""
-        self.call_stack.append(step_name)
+    def enter_step(self, step_name: str, location: Optional[SourceLocation] = None) -> None:
+        """Mark entering a step (for call stack tracking).
+        
+        Args:
+            step_name: Name of the step being entered
+            location: Source location of the call (for debugger)
+        """
+        self._call_stack_entries.append((step_name, location))
         self.current_step = step_name
     
     def exit_step(self) -> None:
         """Mark exiting a step."""
-        if self.call_stack:
-            self.call_stack.pop()
-        self.current_step = self.call_stack[-1] if self.call_stack else None
+        if self._call_stack_entries:
+            self._call_stack_entries.pop()
+        self.current_step = self._call_stack_entries[-1][0] if self._call_stack_entries else None
     
     def is_recursive(self, step_name: str, max_depth: int = 100) -> bool:
         """Check if calling step_name would create excessive recursion."""
-        count = self.call_stack.count(step_name)
+        count = sum(1 for name, _ in self._call_stack_entries if name == step_name)
         return count >= max_depth
     
     def get_call_stack_string(self) -> str:
         """Get a formatted call stack for error messages."""
-        if not self.call_stack:
+        if not self._call_stack_entries:
             return "(at top level)"
-        return " → ".join(self.call_stack)
+        return " → ".join(name for name, _ in self._call_stack_entries)
     
     # =========================================================================
     # I/O Operations
@@ -329,21 +380,27 @@ class Environment:
     # Context Managers
     # =========================================================================
     
-    def step_context(self, step_name: str) -> "StepContext":
-        """Context manager for step execution."""
-        return StepContext(self, step_name)
+    def step_context(self, step_name: str, location: Optional[SourceLocation] = None) -> "StepContext":
+        """Context manager for step execution.
+        
+        Args:
+            step_name: Name of the step being entered
+            location: Source location of the call (for debugger call stack)
+        """
+        return StepContext(self, step_name, location)
 
 
 class StepContext:
     """Context manager for step execution scope."""
 
-    def __init__(self, env: Environment, name: str) -> None:
+    def __init__(self, env: Environment, name: str, location: Optional[SourceLocation] = None) -> None:
         self.env = env
         self.name = name
+        self.location = location
 
     def __enter__(self) -> "StepContext":
         self.env.push_scope()
-        self.env.enter_step(self.name)
+        self.env.enter_step(self.name, self.location)
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:

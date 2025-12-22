@@ -37,20 +37,51 @@ class LineNumberArea(QWidget):
     
     def paintEvent(self, event: QPaintEvent):
         self.code_editor.line_number_area_paint_event(event)
+    
+    def mousePressEvent(self, event):
+        """Handle mouse click to toggle breakpoint."""
+        if event.button() == Qt.MouseButton.LeftButton:
+            # Calculate which line was clicked
+            y = event.position().y()
+            block = self.code_editor.firstVisibleBlock()
+            top = self.code_editor.blockBoundingGeometry(block).translated(
+                self.code_editor.contentOffset()
+            ).top()
+            
+            while block.isValid():
+                block_top = top
+                block_height = self.code_editor.blockBoundingRect(block).height()
+                
+                if block_top <= y < block_top + block_height:
+                    line = block.blockNumber() + 1
+                    self.code_editor.toggle_breakpoint(line)
+                    break
+                
+                top += block_height
+                block = block.next()
+        
+        super().mousePressEvent(event)
 
 
 class CodeEditor(QPlainTextEdit):
     """Single file code editor with line numbers and syntax highlighting"""
     
+    # Signal for breakpoint toggle
+    # Signal for breakpoint toggle
+    breakpoint_toggled = pyqtSignal(int)  # line number
     modified_changed = pyqtSignal(bool)
     cursor_position_changed = pyqtSignal(int, int)  # line, column
-    
+
     def __init__(self, theme: Theme, settings: SettingsManager, parent=None):
         super().__init__(parent)
         self.theme = theme
         self.settings_manager = settings
         self.file_path: Optional[str] = None
         self._highlighter: Optional[StepsHighlighter] = None
+        
+        # Debugger state
+        self._current_debug_line = -1
+        self._breakpoints: set[int] = set()
         
         self._setup_editor()
         self._setup_line_numbers()
@@ -163,9 +194,9 @@ class CodeEditor(QPlainTextEdit):
             max_num //= 10
             digits += 1
         
-        # Minimum 4 digits width + padding
+        # Minimum 4 digits width + padding + icon space
         digits = max(4, digits)
-        space = 16 + self.fontMetrics().horizontalAdvance('9') * digits
+        space = 24 + self.fontMetrics().horizontalAdvance('9') * digits
         return space
     
     def update_line_number_area_width(self, _):
@@ -192,7 +223,7 @@ class CodeEditor(QPlainTextEdit):
         )
     
     def line_number_area_paint_event(self, event: QPaintEvent):
-        """Paint line numbers"""
+        """Paint line numbers and debug indicators"""
         if not self.settings_manager.settings.editor.show_line_numbers:
             return
         
@@ -204,13 +235,49 @@ class CodeEditor(QPlainTextEdit):
         top = round(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
         bottom = top + round(self.blockBoundingRect(block).height())
         
-        current_line = self.textCursor().blockNumber()
+        current_cursor_line = self.textCursor().blockNumber()
+        height = self.fontMetrics().height()
         
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                number = str(block_number + 1)
+                line_num = block_number + 1
+                number_str = str(line_num)
                 
-                if block_number == current_line:
+                # Draw Breakpoint (Red Circle)
+                if line_num in self._breakpoints:
+                    painter.setBrush(QColor("#f44336"))  # Red
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    circle_size = min(height, 12)
+                    circle_rect = QRect(
+                        4, 
+                        top + (height - circle_size) // 2,
+                        circle_size, 
+                        circle_size
+                    )
+                    painter.drawEllipse(circle_rect)
+                
+                # Draw Debug Execution Arrow (Yellow Triangle)
+                if line_num == self._current_debug_line:
+                    painter.setBrush(QColor("#FFC107"))  # Amber/Yellow
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    
+                    # Draw a triangle pointing right
+                    arrow_size = min(height, 12)
+                    arrow_x = 4
+                    arrow_y = top + (height - arrow_size) // 2
+                    
+                    from PyQt6.QtGui import QPolygon, QPolygonF
+                    from PyQt6.QtCore import QPointF
+                    
+                    points = [
+                         QPointF(arrow_x, arrow_y),
+                         QPointF(arrow_x + arrow_size, arrow_y + arrow_size / 2),
+                         QPointF(arrow_x, arrow_y + arrow_size)
+                    ]
+                    painter.drawPolygon(QPolygonF(points))
+                
+                # Draw Line Number
+                if block_number == current_cursor_line:
                     painter.setPen(QColor(self.theme.editor_foreground))
                 else:
                     painter.setPen(QColor(self.theme.editor_gutter_fg))
@@ -218,8 +285,8 @@ class CodeEditor(QPlainTextEdit):
                 painter.drawText(
                     0, top,
                     self.line_number_area.width() - 8, 
-                    self.fontMetrics().height(),
-                    Qt.AlignmentFlag.AlignRight, number
+                    height,
+                    Qt.AlignmentFlag.AlignRight, number_str
                 )
             
             block = block.next()
@@ -228,9 +295,26 @@ class CodeEditor(QPlainTextEdit):
             block_number += 1
     
     def highlight_current_line(self):
-        """Highlight the current line"""
+        """Highlight the current line and debug execution line"""
         extra_selections = []
         
+        # 1. Debug Execution Line (Yellow Highlight)
+        if self._current_debug_line != -1:
+            selection = QTextEdit.ExtraSelection()
+            # Use a slightly transparent yellow/amber
+            line_color = QColor("#FFC107") # Amber 500
+            line_color.setAlpha(60)
+            
+            selection.format.setBackground(line_color)
+            selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
+            
+            # Find the block for the debug line (1-based to 0-based)
+            block = self.document().findBlockByLineNumber(self._current_debug_line - 1)
+            selection.cursor = QTextCursor(block)
+            selection.cursor.clearSelection()
+            extra_selections.append(selection)
+
+        # 2. Current Cursor Line (Standard Highlight)
         if (self.settings_manager.settings.editor.highlight_current_line and 
             not self.isReadOnly()):
             selection = QTextEdit.ExtraSelection()
@@ -242,6 +326,37 @@ class CodeEditor(QPlainTextEdit):
             extra_selections.append(selection)
         
         self.setExtraSelections(extra_selections)
+
+    def highlight_debug_line(self, line: int):
+        """Highlight a specific line for debugging."""
+        self._current_debug_line = line
+        self.highlight_current_line()
+        self.line_number_area.update()
+        
+        # Scroll to line
+        block = self.document().findBlockByLineNumber(line - 1)
+        cursor = QTextCursor(block)
+        self.setTextCursor(cursor)
+        self.centerCursor()
+
+    def clear_debug_highlight(self):
+        """Clear the debug line highlighting."""
+        self._current_debug_line = -1
+        self.highlight_current_line()
+        self.line_number_area.update()
+        
+    def toggle_breakpoint(self, line: int):
+        """Toggle a breakpoint at the given line."""
+        if line in self._breakpoints:
+            self._breakpoints.remove(line)
+        else:
+            self._breakpoints.add(line)
+        self.line_number_area.update()
+        self.breakpoint_toggled.emit(line)
+        
+    def get_breakpoints(self) -> set[int]:
+        """Get the set of breakpoint line numbers."""
+        return self._breakpoints.copy()
     
     def _emit_cursor_position(self):
         """Emit cursor position signal"""
@@ -714,6 +829,7 @@ class EditorTabs(QTabWidget):
         for editor in self.editors.values():
             editor.refresh_settings()
     
+    
     def goto_line(self, line: int):
         """Go to a specific line in the current editor"""
         editor = self.get_current_editor()
@@ -723,3 +839,54 @@ class EditorTabs(QTabWidget):
                 cursor = QTextCursor(block)
                 editor.setTextCursor(cursor)
                 editor.centerCursor()
+
+    def highlight_debug_line(self, filepath: str, line: int):
+        """Highlight execution line in the appropriate editor."""
+        from pathlib import Path
+        
+        # Robust path matching
+        target_path = Path(filepath).resolve()
+        target_editor = None
+        
+        # Try to find matching open editor
+        for open_path, editor in self.editors.items():
+            if Path(open_path).resolve() == target_path:
+                target_editor = editor
+                break
+        
+        # If file not open, open it
+        if not target_editor:
+            self.open_file(str(target_path))
+            # Try to find it again (using the key format open_file used)
+            for open_path, editor in self.editors.items():
+                if Path(open_path).resolve() == target_path:
+                    target_editor = editor
+                    break
+            
+        # Switch to tab and highlight
+        if target_editor:
+            # Find index
+            for i in range(self.count()):
+                if self.widget(i) == target_editor:
+                    self.setCurrentIndex(i)
+                    break
+            
+            target_editor.highlight_debug_line(line)
+
+    def clear_debug_highlight(self):
+        """Clear debug highlight in all editors."""
+        for editor in self.editors.values():
+            editor.clear_debug_highlight()
+
+    def get_all_breakpoints(self) -> Dict[str, set[int]]:
+        """Get all breakpoints from all open editors.
+        
+        Returns:
+            Dict mapping absolute filepath to set of line numbers
+        """
+        all_breakpoints = {}
+        for filepath, editor in self.editors.items():
+            bps = editor.get_breakpoints()
+            if bps:
+                all_breakpoints[filepath] = bps
+        return all_breakpoints

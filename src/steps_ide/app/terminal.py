@@ -14,7 +14,7 @@ import termios
 import shutil
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
@@ -84,10 +84,32 @@ class TerminalBridge(QObject):
         self.master_fd: Optional[int] = None
         self.child_pid: Optional[int] = None
         self.reader_thread: Optional[PtyReaderThread] = None
+        self.input_callback: Optional[Callable[[str], None]] = None
+        self.input_buffer: str = ""
     
     @pyqtSlot(str)
     def sendData(self, data: str):
         """Receive data from xterm.js and send to PTY"""
+        # Intercept input if callback is set
+        if self.input_callback:
+            for char in data:
+                if char == '\r': # Enter
+                    self.dataReceived.emit('\r\n')
+                    callback = self.input_callback
+                    text = self.input_buffer
+                    self.input_callback = None
+                    self.input_buffer = ""
+                    callback(text)
+                    return
+                elif char == '\x7f': # Backspace
+                    if self.input_buffer:
+                        self.input_buffer = self.input_buffer[:-1]
+                        self.dataReceived.emit('\b \b')
+                else:
+                    self.input_buffer += char
+                    self.dataReceived.emit(char)
+            return
+
         if self.master_fd is not None:
             try:
                 os.write(self.master_fd, data.encode('utf-8'))
@@ -432,6 +454,20 @@ class XtermWidget(QWidget):
             self._update_dir_label()
             cd_cmd = f'cd /d "{path}"' if IS_WINDOWS else f'cd "{path}"'
             self.bridge.write_command(cd_cmd)
+            
+    def write_output(self, text: str):
+        """Write text directly to terminal display."""
+        if text:
+            # Ensure CRLF for xterm.js
+            formatted = text.replace('\n', '\r\n')
+            self.bridge.dataReceived.emit(formatted)
+
+    def request_input(self, prompt: str, callback):
+        """Request input from user via terminal."""
+        if prompt:
+            self.write_output(prompt)
+        self.bridge.input_buffer = ""
+        self.bridge.input_callback = callback
     
     def run_steps_file(self, filepath: str):
         """Run a Steps file"""

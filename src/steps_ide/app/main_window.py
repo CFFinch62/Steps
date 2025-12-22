@@ -208,7 +208,12 @@ class StepsIDEMainWindow(QMainWindow):
     def __init__(self, settings: SettingsManager, theme_manager: ThemeManager, parent=None):
         super().__init__(parent)
         self.settings = settings
+        self.settings = settings
         self.theme_manager = theme_manager
+        
+        self.debug_panel = None
+        self._debug_thread = None
+        self.debug_dock = None
         
         self.setWindowTitle("Steps IDE")
         self._restore_window_state()
@@ -287,6 +292,22 @@ class StepsIDEMainWindow(QMainWindow):
         
         # Handle terminal position (bottom vs right)
         self._update_terminal_position()
+        
+        # Setup Debug Dock
+        from steps_ide.app.debug_panel import DebugPanel
+        self.debug_panel = DebugPanel()
+        self.debug_dock = QDockWidget("Debug", self)
+        self.debug_dock.setWidget(self.debug_panel)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.debug_dock)
+        self.debug_dock.hide()
+        
+        # Connect debug panel signals
+        self.debug_panel.step_into_clicked.connect(self._step_into)
+        self.debug_panel.step_over_clicked.connect(self._step_over)
+        self.debug_panel.step_out_clicked.connect(self._step_out)
+        self.debug_panel.continue_clicked.connect(self._continue_debug)
+        self.debug_panel.stop_clicked.connect(self._stop_debug)
+        self.debug_panel.frame_selected.connect(self._on_frame_selected)
     
     def _update_terminal_position(self):
         """Update terminal position based on settings"""
@@ -482,11 +503,28 @@ class StepsIDEMainWindow(QMainWindow):
             action.triggered.connect(lambda checked, t=theme_name: self._set_theme(t))
             self.theme_actions.append((theme_name, action))
         
+        # Debug menu
+        debug_menu = menubar.addMenu("&Debug")
+        
+        debug_menu.addAction("Start Debugging", "F5", self._start_debug)
+        debug_menu.addSeparator()
+        debug_menu.addAction("Step Into", "F11", self._step_into)
+        debug_menu.addAction("Step Over", "F10", self._step_over)
+        debug_menu.addAction("Step Out", "Shift+F11", self._step_out)
+        debug_menu.addSeparator()
+        debug_menu.addAction("Toggle Breakpoint", "F9", self._toggle_breakpoint)
+        debug_menu.addSeparator()
+        debug_menu.addAction("Stop Debugging", "Shift+F5", self._stop_debug)
+        debug_menu.addSeparator()
+        self.toggle_debug_panel_action = debug_menu.addAction("Toggle Debug Panel", "Ctrl+Shift+D", self._toggle_debug_panel)
+        self.toggle_debug_panel_action.setCheckable(True)
+        self.toggle_debug_panel_action.setChecked(False)  # Hidden by default
+        
         # Run menu
         run_menu = menubar.addMenu("&Run")
         
         run_project_action = run_menu.addAction("&Run Steps Project")
-        run_project_action.setShortcut("F5")
+        run_project_action.setShortcut("Ctrl+F5")  # F5 is for debugging
         run_project_action.triggered.connect(self._run_current_project)
         
         # Help menu
@@ -526,7 +564,7 @@ class StepsIDEMainWindow(QMainWindow):
         
         # Run
         run_btn = toolbar.addAction("▶️ Run")
-        run_btn.setToolTip("Run Steps Project (F5)")
+        run_btn.setToolTip("Run Steps Project (Ctrl+F5)")
         run_btn.triggered.connect(self._run_current_project)
         
         toolbar.addSeparator()
@@ -756,6 +794,12 @@ class StepsIDEMainWindow(QMainWindow):
         if not visible:
             self.terminal.focus_input()
     
+    def _toggle_debug_panel(self):
+        """Toggle visibility of the debug panel."""
+        visible = self.debug_dock.isVisible()
+        self.debug_dock.setVisible(not visible)
+        self.toggle_debug_panel_action.setChecked(not visible)
+    
     def _set_terminal_position(self, position: str):
         self.settings.settings.terminal.position = position
         self.settings.save()
@@ -908,6 +952,11 @@ class StepsIDEMainWindow(QMainWindow):
             event.ignore()
             return
         
+        # Stop debug thread if running
+        if hasattr(self, '_debug_thread') and self._debug_thread and self._debug_thread.isRunning():
+            self._debug_thread.stop()
+            self._debug_thread.wait()
+
         # Stop terminal before closing to prevent thread crash
         self.terminal.stop_shell()
         
@@ -932,3 +981,128 @@ class StepsIDEMainWindow(QMainWindow):
         
         self.settings.save()
         event.accept()
+
+    # Debugging Methods
+    
+    def _start_debug(self):
+        """Start debugging the current file/project."""
+        filepath = self.editor_tabs.get_current_filepath()
+        if not filepath:
+            self.statusbar.showMessage("No file to debug", 3000)
+            return
+
+        # Set debug panel state (but don't force show/hide)
+        self.debug_panel.set_debugging_active(True)
+        self.debug_panel.set_paused(True, "Start") # Initial state
+
+        from steps_ide.app.debug_thread import DebugThread
+        
+        # Collect breakpoints from all open editors
+        breakpoints = self.editor_tabs.get_all_breakpoints()
+        
+        self._debug_thread = DebugThread(filepath, breakpoints, self)
+        self._debug_thread.debug_event.connect(self._on_debug_event)
+        self._debug_thread.finished_signal.connect(self._on_debug_finished)
+        self._debug_thread.output_signal.connect(self._on_debug_output)
+        self._debug_thread.input_request_signal.connect(self._on_input_request)
+        self._debug_thread.start()
+        
+        self.statusbar.showMessage("Debugging started...", 3000)
+
+    def _stop_debug(self):
+        """Stop the debug session."""
+        if self._debug_thread:
+            self._debug_thread.stop()
+            self._debug_thread = None # Thread will clean itself up
+        
+        self.debug_panel.set_debugging_active(False)
+        self.editor_tabs.clear_debug_highlight()
+        self.statusbar.showMessage("Debugging stopped", 3000)
+
+    def _step_into(self):
+        if self._debug_thread:
+            self._debug_thread.step_into()
+
+    def _step_over(self):
+        if self._debug_thread:
+            self._debug_thread.step_over()
+
+    def _step_out(self):
+        if self._debug_thread:
+            self._debug_thread.step_out()
+
+    def _continue_debug(self):
+        if self._debug_thread:
+            # Clear paused state in UI immediately to feel responsive
+            self.debug_panel.set_paused(False)
+            self._debug_thread.continue_run()
+
+    def _toggle_breakpoint(self):
+        """Toggle breakpoint on current line."""
+        editor = self.editor_tabs.get_current_editor()
+        if editor:
+            cursor = editor.textCursor()
+            line = cursor.blockNumber() + 1
+            editor.toggle_breakpoint(line)
+            
+            # If debugging, update thread
+            if self._debug_thread:
+                filepath = self.editor_tabs.get_current_filepath()
+                if filepath:
+                    if line in editor.get_breakpoints():
+                        self._debug_thread.add_breakpoint(filepath, line)
+                    else:
+                        self._debug_thread.remove_breakpoint(filepath, line)
+
+    def _on_debug_event(self, event):
+        """Handle event from debug thread."""
+        if event.event_type in ('paused', 'breakpoint', 'call', 'return'):
+            # Paused or stepping
+            # Paused or stepping
+            # For call/return we might optionally update stack without stealing focus, 
+            # but usually we only get events when paused.
+            
+            # Convert Path to str explicitly for editor lookup
+            filepath = str(event.snapshot.current_file)
+            line = event.snapshot.current_line
+            
+            self.debug_panel.set_paused(True, f"{event.snapshot.current_file.name}:{line}")
+            self.debug_panel.update_from_snapshot(event.snapshot)
+            self.editor_tabs.highlight_debug_line(filepath, line)
+            self.activateWindow() # Bring window to front
+
+    def _on_debug_finished(self, success: bool, message: str):
+        """Handle debug session finish."""
+        self._stop_debug()
+        if not success and message:
+             QMessageBox.warning(self, "Debug Error", message)
+        else:
+             self.statusbar.showMessage("Debugging finished", 3000)
+
+    def _on_debug_output(self, text: str):
+        """Handle output from debug session."""
+        if self.terminal:
+             self.terminal.write_output(text)
+
+    def _on_input_request(self, prompt: str):
+        """Handle input request from debugger."""
+        if self.terminal:
+            # Ensure terminal is visible so user can type
+            if not self.terminal_container.isVisible():
+                self.terminal_container.setVisible(True)
+                self.settings.settings.terminal.visible = True
+                self.toggle_terminal_action.setChecked(True)
+                self.terminal_toolbar_btn.setChecked(True)
+            
+            # Focus terminal for input
+            self.terminal.focus_input()
+            self.terminal.request_input(prompt, self._on_input_received)
+
+    def _on_input_received(self, text: str):
+        """Handle input received from terminal."""
+        if self._debug_thread:
+            self._debug_thread.provide_input(text)
+
+    def _on_frame_selected(self, filepath: str, line: int):
+        """Handle click on call stack frame."""
+        self.editor_tabs.highlight_debug_line(filepath, line)

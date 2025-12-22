@@ -212,7 +212,7 @@ class Interpreter:
             )
         
         # Enter step context
-        with self.env.step_context(step_name):
+        with self.env.step_context(step_name, location):
             # Bind arguments to parameters
             for param_name, arg_value in zip(step_def.parameters, arguments):
                 self.env.set_variable(param_name, arg_value, is_declaration=True)
@@ -281,7 +281,7 @@ class Interpreter:
     def _exec_display(self, stmt: DisplayStatement) -> None:
         """Execute: display expression"""
         value = self.evaluate_expression(stmt.expression)
-        self.env.write_output(value.display_string())
+        self.env.write_output(value.display_string() + "\n")
     
     def _exec_set(self, stmt: SetStatement) -> None:
         """Execute: set target to value"""
@@ -337,6 +337,7 @@ class Interpreter:
         
         # New scope for riser
         self.env.push_scope()
+        self.env.enter_step(riser_name, location)  # Track in call stack for debugger
         try:
             # Bind arguments
             for param_name, arg_value in zip(riser_def.parameters, arguments):
@@ -350,6 +351,7 @@ class Interpreter:
             except ReturnValue as rv:
                 return rv.value
         finally:
+            self.env.exit_step()  # Remove from call stack
             self.env.pop_scope()
     
     def _exec_return(self, stmt: ReturnStatement) -> None:

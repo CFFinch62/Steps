@@ -19,6 +19,7 @@ This tutorial will guide you through the Steps programming language with practic
 9. [Steps with Parameters](#lesson-9-steps-with-parameters)
 10. [Organizing with Floors](#lesson-10-organizing-with-floors)
 11. [Building a Complete Project](#lesson-11-building-a-complete-project)
+12. [Using the Debugger](#lesson-12-using-the-debugger)
 
 ---
 
@@ -410,6 +411,91 @@ The project is organized into:
 ✓ Each floor has a clear purpose
 ✓ Steps are small and focused
 ✓ Good organization makes projects maintainable
+
+---
+
+## Lesson 12: Using the Debugger
+
+### Concept: Understanding Your Code
+
+The Steps IDE includes a debugger that lets you step through your code line by line, inspect variables, and understand exactly how your program runs.
+
+### Why Use a Debugger?
+
+- See exactly what your code is doing
+- Find and fix bugs faster
+- Understand how variables change
+- Learn how steps call each other
+
+### Debug Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| F5 | Start debugging |
+| Shift+F5 | Stop debugging |
+| F9 | Toggle breakpoint |
+| F11 | Step Into |
+| F10 | Step Over |
+| Shift+F11 | Step Out |
+| Ctrl+Shift+D | Toggle debug panel |
+
+### Setting Breakpoints
+
+Breakpoints tell the debugger where to pause. You can set them by:
+
+1. **Clicking in the gutter** - Click the left margin next to a line number
+2. **Pressing F9** - Toggle breakpoint on the current line
+
+A red circle appears next to lines with breakpoints.
+
+### Stepping Through Code
+
+1. **Start Debugging (F5)** - Your program runs until it hits a breakpoint or the first line
+2. The current line is highlighted in yellow
+3. Use stepping commands to move through your code:
+
+   - **Step Into (F11)** - Execute the line. If it calls a step, enter that step.
+   - **Step Over (F10)** - Execute the line. If it calls a step, run it completely.
+   - **Step Out (Shift+F11)** - Run until the current step returns.
+
+### The Debug Panel
+
+Open it with **Ctrl+Shift+D** or from the Debug menu.
+
+**Variables Tab:**
+- 🌐 **Globals** - Variables in your main building
+- 📦 **Step Name** - Local variables when inside a step
+- Changed variables are highlighted in green
+
+**Call Stack Tab:**
+- Shows nested step calls
+- Click to jump to a location
+
+### Try It: Debug the Tip Calculator
+
+1. Open `/projects/tip_calculator/tip_calculator.building`
+2. Click in the gutter on line 6 (the first `set` statement) to add a breakpoint
+3. Press **F5** to start debugging
+4. Use **F11** (Step Into) to move through the code
+5. Watch the Variables panel as values change
+6. When you reach `call calculate_tip`, use **F11** to step into the step
+7. See the call stack show the step you're inside
+8. Use **Shift+F11** to step out and return to the building
+
+### Debugging Tips
+
+1. **Start at the beginning** - Set a breakpoint on the first line of code you want to understand
+2. **Watch variables** - Check that values are what you expect at each step
+3. **Use Step Over for trusted code** - If a step works correctly, skip into it with F10
+4. **Check the call stack** - When debugging errors in steps, the call stack shows how you got there
+
+### Key Takeaways
+
+✓ Use breakpoints to pause execution where you want  
+✓ F11 steps into code, F10 steps over it  
+✓ The Variables tab shows current values  
+✓ The Call Stack shows nested step calls  
+✓ Debugging helps you understand and fix your code
 
 ---
 

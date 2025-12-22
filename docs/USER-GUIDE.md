@@ -14,12 +14,13 @@ This guide will help you get started with Steps, an educational programming lang
 4. [The Building Metaphor](#the-building-metaphor)
 5. [Using the REPL](#using-the-repl)
 6. [Using the IDE](#using-the-ide)
-7. [Language Basics](#language-basics)
-8. [Control Flow](#control-flow)
-9. [Working with Data](#working-with-data)
-10. [Creating Steps and Floors](#creating-steps-and-floors)
-11. [Error Handling](#error-handling)
-12. [Best Practices](#best-practices)
+7. [Debugging](#debugging)
+8. [Language Basics](#language-basics)
+9. [Control Flow](#control-flow)
+10. [Working with Data](#working-with-data)
+11. [Creating Steps and Floors](#creating-steps-and-floors)
+12. [Error Handling](#error-handling)
+13. [Best Practices](#best-practices)
 
 ---
 
@@ -210,7 +211,9 @@ python -m steps_ide.main
 | Ctrl+B | Toggle file browser |
 | Ctrl+Shift+P | Toggle project browser |
 | Ctrl+J | Toggle terminal |
-| F5 | Run Steps project |
+| Ctrl+F5 | Run Steps project |
+| F5 | Start debugging |
+| Shift+F5 | Stop debugging |
 | F6 | Check syntax |
 | Ctrl+P | Command palette |
 | Ctrl+Q | Quit |
@@ -219,9 +222,73 @@ python -m steps_ide.main
 
 1. **Project Browser**: View your project's building/floor/step structure
 2. **Syntax-Aware Editor**: Recognizes `.building`, `.floor`, and `.step` files
-3. **Run/Check Integration**: Press F5 to run, F6 to check syntax
+3. **Run/Check Integration**: Press Ctrl+F5 to run, F6 to check syntax
 4. **Terminal Panel**: See output and error messages
 5. **Command Palette**: Access all commands with Ctrl+P
+6. **Integrated Debugger**: Step through code, inspect variables, set breakpoints
+
+---
+
+## Debugging
+
+The Steps IDE includes a full-featured debugger to help you understand how your programs run.
+
+### Debug Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| F5 | Start debugging |
+| Shift+F5 | Stop debugging |
+| F9 | Toggle breakpoint |
+| F11 | Step Into (enter steps/risers) |
+| F10 | Step Over (skip into steps) |
+| Shift+F11 | Step Out (exit current step) |
+| Ctrl+Shift+D | Toggle debug panel |
+
+### Starting the Debugger
+
+1. Open a `.building` or `.step` file
+2. Press **F5** or use **Debug → Start Debugging**
+3. The debug panel will appear on the right side
+
+### Setting Breakpoints
+
+Click in the line number area (left margin) or press **F9** to toggle a breakpoint on the current line. A red circle indicates a breakpoint.
+
+When the program runs, it will pause at breakpoints, allowing you to:
+- Inspect variable values
+- Step through code line by line
+- Understand program flow
+
+### The Debug Panel
+
+The debug panel shows two tabs:
+
+**Variables Tab:**
+- **🌐 Globals**: Variables defined in the main building
+- **📦 Step/Riser Name**: Local variables when inside a step or riser
+- Values are color-coded by type (green = number, orange = text, etc.)
+- Newly changed variables are highlighted in green
+
+**Call Stack Tab:**
+- Shows the chain of step/riser calls
+- Empty when in the main building
+- Shows nested levels when inside steps and risers
+- Click a frame to jump to that location
+
+### Stepping Through Code
+
+- **Step Into (F11)**: Execute the next line. If it's a step call, enter the step.
+- **Step Over (F10)**: Execute the next line. If it's a step call, run it completely without stopping inside.
+- **Step Out (Shift+F11)**: Run until the current step returns, then pause.
+- **Continue**: Resume running until the next breakpoint.
+
+### Debugging Tips
+
+1. **Start Small**: Set a breakpoint at the beginning of your program and step through
+2. **Watch Variables**: Check that variables have the values you expect
+3. **Use Step Over**: When you trust a step works correctly, use Step Over to skip into it
+4. **Check the Call Stack**: When inside nested steps, the call stack shows how you got there
 
 ---
 

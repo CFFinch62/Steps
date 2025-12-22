@@ -13,3 +13,4 @@ building: tip_calculator
     display "Tip:   $" added to (tip_amount as text)
     display "Total: $" added to (total as text)
     exit
+    

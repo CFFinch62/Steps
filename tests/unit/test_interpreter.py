@@ -58,14 +58,14 @@ class TestDisplayStatement:
     display "Hello, World!"
 """)
         assert result.success
-        assert result.output_lines[0] == "Hello, World!"
+        assert result.output_lines[0] == "Hello, World!\n"
     
     def test_display_boolean(self):
         result = run("""building: test
     display true
 """)
         assert result.success
-        assert result.output_lines[0] == "true"
+        assert result.output_lines[0] == "true\n"
     
     def test_display_expression(self):
         result = run("""building: test
@@ -92,7 +92,7 @@ class TestSetStatement:
     display name
 """)
         assert result.success
-        assert result.output_lines[0] == "Alice"
+        assert result.output_lines[0] == "Alice\n"
     
     def test_set_expression(self):
         result = run("""building: test
@@ -125,7 +125,7 @@ class TestExitStatement:
 """)
         assert result.success
         assert len(result.output_lines) == 1
-        assert result.output_lines[0] == "before"
+        assert result.output_lines[0] == "before\n"
 
 
 # =============================================================================
@@ -141,7 +141,7 @@ class TestIfStatement:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_if_false(self):
         result = run("""building: test
@@ -159,7 +159,7 @@ class TestIfStatement:
         display "no"
 """)
         assert result.success
-        assert result.output_lines[0] == "no"
+        assert result.output_lines[0] == "no\n"
     
     def test_if_otherwise_if(self):
         result = run("""building: test
@@ -172,7 +172,7 @@ class TestIfStatement:
         display "other"
 """)
         assert result.success
-        assert result.output_lines[0] == "two"
+        assert result.output_lines[0] == "two\n"
     
     def test_if_comparison(self):
         result = run("""building: test
@@ -181,7 +181,7 @@ class TestIfStatement:
         display "big"
 """)
         assert result.success
-        assert result.output_lines[0] == "big"
+        assert result.output_lines[0] == "big\n"
 
 
 class TestRepeatStatement:
@@ -210,7 +210,7 @@ class TestRepeatStatement:
         display char
 """)
         assert result.success
-        assert result.output_lines == ["a", "b", "c"]
+        assert result.output_lines == ["a\n", "b\n", "c\n"]
     
     def test_repeat_while(self):
         result = run("""building: test
@@ -234,7 +234,7 @@ class TestAttemptStatement:
         display "catch"
 """)
         assert result.success
-        assert result.output_lines[0] == "try"
+        assert result.output_lines[0] == "try\n"
         assert len(result.output_lines) == 1
     
     def test_attempt_with_continue(self):
@@ -245,7 +245,7 @@ class TestAttemptStatement:
         display "finally"
 """)
         assert result.success
-        assert result.output_lines == ["try", "finally"]
+        assert result.output_lines == ["try\n", "finally\n"]
 
 
 # =============================================================================
@@ -307,7 +307,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_not_equal(self):
         result = run("""building: test
@@ -315,7 +315,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_less_than(self):
         result = run("""building: test
@@ -323,7 +323,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_greater_than(self):
         result = run("""building: test
@@ -331,7 +331,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_less_than_or_equal(self):
         result = run("""building: test
@@ -339,7 +339,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_greater_than_or_equal(self):
         result = run("""building: test
@@ -347,7 +347,7 @@ class TestComparisonExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
 
 
 class TestBooleanExpressions:
@@ -359,7 +359,7 @@ class TestBooleanExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_and_false(self):
         result = run("""building: test
@@ -369,7 +369,7 @@ class TestBooleanExpressions:
         display "no"
 """)
         assert result.success
-        assert result.output_lines[0] == "no"
+        assert result.output_lines[0] == "no\n"
     
     def test_or_true(self):
         result = run("""building: test
@@ -377,7 +377,7 @@ class TestBooleanExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
     
     def test_not(self):
         result = run("""building: test
@@ -385,7 +385,7 @@ class TestBooleanExpressions:
         display "yes"
 """)
         assert result.success
-        assert result.output_lines[0] == "yes"
+        assert result.output_lines[0] == "yes\n"
 
 
 class TestTextOperations:
@@ -396,7 +396,7 @@ class TestTextOperations:
     display "Hello, " added to "World!"
 """)
         assert result.success
-        assert result.output_lines[0] == "Hello, World!"
+        assert result.output_lines[0] == "Hello, World!\n"
     
     def test_length_of(self):
         result = run("""building: test
@@ -412,7 +412,7 @@ class TestTextOperations:
         display "found"
 """)
         assert result.success
-        assert result.output_lines[0] == "found"
+        assert result.output_lines[0] == "found\n"
     
     def test_starts_with(self):
         result = run("""building: test
@@ -421,7 +421,7 @@ class TestTextOperations:
         display "secure"
 """)
         assert result.success
-        assert result.output_lines[0] == "secure"
+        assert result.output_lines[0] == "secure\n"
     
     def test_ends_with(self):
         result = run("""building: test
@@ -430,7 +430,7 @@ class TestTextOperations:
         display "pdf file"
 """)
         assert result.success
-        assert result.output_lines[0] == "pdf file"
+        assert result.output_lines[0] == "pdf file\n"
 
 
 class TestListOperations:
@@ -450,7 +450,7 @@ class TestListOperations:
     display items[1]
 """)
         assert result.success
-        assert result.output_lines[0] == "b"
+        assert result.output_lines[0] == "b\n"
     
     def test_add_to_list(self):
         result = run("""building: test
@@ -477,7 +477,7 @@ class TestListOperations:
         display "found"
 """)
         assert result.success
-        assert result.output_lines[0] == "found"
+        assert result.output_lines[0] == "found\n"
 
 
 class TestTableOperations:
@@ -489,7 +489,7 @@ class TestTableOperations:
     display person["name"]
 """)
         assert result.success
-        assert result.output_lines[0] == "Alice"
+        assert result.output_lines[0] == "Alice\n"
     
     def test_table_length(self):
         result = run("""building: test
@@ -517,7 +517,7 @@ class TestTypeConversion:
     display x added to "!"
 """)
         assert result.success
-        assert result.output_lines[0] == "42!"
+        assert result.output_lines[0] == "42!\n"
 
 
 # =============================================================================
@@ -653,4 +653,4 @@ class TestStepCalls:
         from steps.interpreter import run_building
         exec_result = run_building(build_result.ast, env)
         assert exec_result.success
-        assert outputs[0] == "Alice"
+        assert outputs[0] == "Alice\n"
