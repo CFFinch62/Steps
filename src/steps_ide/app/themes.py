@@ -1006,10 +1006,35 @@ QTreeView::item:hover {{
 
 QTreeView::item:selected {{
     background-color: {theme.browser_item_selected};
+    color: {theme.foreground};
 }}
 
 QTreeView::branch {{
     background-color: {theme.browser_background};
+}}
+
+/* Tree Widget (Variables view, etc.) */
+QTreeWidget {{
+    background-color: {theme.browser_background};
+    color: {theme.foreground};
+    border: none;
+    outline: none;
+    padding: 4px;
+}}
+
+QTreeWidget::item {{
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin: 1px 4px;
+}}
+
+QTreeWidget::item:hover {{
+    background-color: {theme.browser_item_hover};
+}}
+
+QTreeWidget::item:selected {{
+    background-color: {theme.browser_item_selected};
+    color: {theme.foreground};
 }}
 
 /* Header View */

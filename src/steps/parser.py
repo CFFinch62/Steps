@@ -1241,6 +1241,14 @@ class Parser:
                 elements=[]
             )
         
+        # Empty table: [ : ]
+        if self.match(TokenType.COLON):
+            self.expect(TokenType.RBRACKET, "Expected ']' after empty table")
+            return TableLiteral(
+                location=self.location_from(start),
+                pairs=[]
+            )
+        
         # Parse first element
         first_expr = self.parse_expression()
         

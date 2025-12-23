@@ -1,9 +1,10 @@
 step: show_date
     belongs to: helpers
-    expects: nothing
+    expects: date as text
     returns: nothing
     
     do:
-        display "Today's date: December 11, 2025"
-        display "This is another reusable step!"
+        display "I have received todays date but returned nothing to do my job"
+        display "Today's date: " added to date
+       
 

@@ -63,6 +63,21 @@ See `/docs/TUTORIAL.md` for the complete tutorial with explanations and exercise
 **Concepts:** Full application, multiple floors, menu system, data management
 **Run:** `python -m steps.main run projects/tutorial/lesson_11_complete_project`
 
+### Lesson 12: Error Handling
+**Folder:** `lesson_12_error_handling/`
+**Concepts:** attempt, if unsuccessful, then continue, problem_message
+**Run:** `python -m steps.main run projects/tutorial/lesson_12_error_handling`
+
+### Lesson 13: Working with Files
+**Folder:** `lesson_13_files/`
+**Concepts:** read_file, write_file, append_file, file_exists, CSV operations
+**Run:** `python -m steps.main run projects/tutorial/lesson_13_files`
+
+### Lesson 14: Randomness and Games
+**Folder:** `lesson_14_random/`
+**Concepts:** random_int, random_choice, game loops, simulations
+**Run:** `python -m steps.main run projects/tutorial/lesson_14_random`
+
 ## Using the IDE
 
 You can also run these lessons in the Steps IDE:

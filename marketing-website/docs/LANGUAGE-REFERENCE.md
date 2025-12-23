@@ -62,23 +62,45 @@ Steps is **case-sensitive**:
 
 ### 1.4 Identifiers
 
-Valid identifiers:
-- Start with a letter or underscore
-- Contain letters, digits, or underscores
-- Cannot be reserved words
+Identifiers are names used for variables, steps, floors, buildings, risers, and parameters.
+
+**Rules for valid identifiers:**
+
+| Rule | Description |
+|------|-------------|
+| Must start with | A letter (`a-z`, `A-Z`) or underscore (`_`) |
+| Can contain | Letters, digits (`0-9`), or underscores |
+| Cannot contain | Spaces, hyphens, or special characters |
+| Cannot be | A reserved word (see Section 14) |
+| Case-sensitive | `myVariable` and `myvariable` are different |
+
+**These rules apply to:**
+- Variable names (`set my_var to 10`)
+- Building names (`building: my_project`)
+- Floor names (`floor: user_input`)
+- Step names (`step: calculate_total`)
+- Riser names (`riser: helper_function`)
+- Parameter names (`expects: first_name, last_name`)
+- Return value names (`returns: result`)
 
 ```steps
-# Valid
+# Valid identifiers
 my_variable
 _private
 count2
 firstName
+calculate_shipping_cost
 
-# Invalid
-2count      # Starts with digit
-my-var      # Contains hyphen
-if          # Reserved word
+# Invalid identifiers
+2count          # Starts with digit
+my-var          # Contains hyphen
+my var          # Contains space
+first.name      # Contains period
+set             # Reserved word
 ```
+
+> [!TIP]
+> Use **lowercase with underscores** for multi-word names (e.g., `calculate_tax`, `user_input`). This style is called "snake_case" and makes names easy to read.
 
 ---
 

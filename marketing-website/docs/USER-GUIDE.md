@@ -238,6 +238,32 @@ set is_student to true
 set balance to 1234.56
 ```
 
+### Naming Rules
+
+All names in Steps (variables, steps, floors, buildings, risers, parameters) must follow these rules:
+
+| Rule | Example |
+|------|---------|
+| Start with a letter or underscore | `my_var`, `_private` |
+| Contain only letters, digits, underscores | `count2`, `user_name` |
+| No spaces | ✗ `my variable` |
+| No hyphens | ✗ `my-variable` |
+| No reserved words | ✗ `set`, `if`, `display` |
+
+> **Case-sensitive:** `myAge` and `myage` are different variables.
+
+```steps
+# Good names
+user_name
+calculateTotal
+item_count_2
+
+# Bad names (will cause errors)
+user-name     # hyphen not allowed
+2nd_item      # can't start with digit
+my variable   # spaces not allowed
+```
+
 ### Declaring Variables with Types
 
 In steps, use the `declare:` section for explicit declarations:

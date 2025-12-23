@@ -113,12 +113,12 @@ repeat for each person in loaded
     display person["name"]
 ```
 
-### Note on Empty Tables
+### Creating Empty Tables
 
-When creating a new row for CSVs, `[]` creates a generic List, which cannot accept text keys. To create an empty Table, use a dummy key:
+Use `[:]` to create an empty table:
 
 ```steps
-set row to ["_": ""]    # Creates table (presence of ':' makes it a table)
+set row to [:]              # Creates an empty table
 set row["name"] to "Bob"
 set row["age"] to "30"
 ```

@@ -1,0 +1,18 @@
+step: get_score_feedback
+    belongs to: scoring
+    expects: score, total
+    returns: message
+
+    note: Get feedback message based on score
+
+    do:
+        if score is equal to total
+            set message to "PERFECT! You're a Steps expert!"
+        otherwise if score is greater than or equal to 3
+            set message to "Great job! You know your Steps!"
+        otherwise if score is greater than or equal to 1
+            set message to "Good effort! Keep learning!"
+        otherwise
+            set message to "Time to review the tutorials!"
+        
+        return message

@@ -101,25 +101,9 @@ class DebugPanel(QWidget):
         btn.setMinimumSize(32, 32)
         btn.setFont(QFont("", 14))
         
+        # Only set the text color, let the theme handle background
         if color:
-            btn.setStyleSheet(f"""
-                QToolButton {{
-                    border: 1px solid #555;
-                    border-radius: 4px;
-                    padding: 4px;
-                    background: #2d2d2d;
-                    color: {color};
-                }}
-                QToolButton:hover {{
-                    background: #3d3d3d;
-                }}
-                QToolButton:pressed {{
-                    background: #1d1d1d;
-                }}
-                QToolButton:disabled {{
-                    color: #555;
-                }}
-            """)
+            btn.setStyleSheet(f"QToolButton {{ color: {color}; }}")
         
         return btn
     

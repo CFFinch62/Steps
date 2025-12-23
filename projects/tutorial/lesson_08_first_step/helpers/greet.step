@@ -5,5 +5,5 @@ step: greet
     
     do:
         display "Hello from the greet step!"
-        display "This step can be called multiple times."
+        display "I have received nothing and return nothing to do my job"
 

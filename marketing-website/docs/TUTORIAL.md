@@ -113,6 +113,19 @@ See `/projects/tutorial/lesson_02_variables/lesson_02_variables.building`
 ✓ Text goes in "quotes"
 ✓ Booleans are `true` or `false`
 
+### Naming Rules
+
+When naming variables, steps, floors, and buildings, follow these rules:
+
+| ✓ Valid | ✗ Invalid |
+|---------|-----------|
+| `my_variable` | `my-variable` (no hyphens) |
+| `count2` | `2count` (can't start with digit) |
+| `firstName` | `first name` (no spaces) |
+| `_private` | `set` (reserved word) |
+
+> **Remember:** Names are case-sensitive! `myAge` and `myage` are different variables.
+
 ---
 
 ## Lesson 3: User Input and Output

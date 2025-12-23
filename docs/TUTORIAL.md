@@ -19,7 +19,11 @@ This tutorial will guide you through the Steps programming language with practic
 9. [Steps with Parameters](#lesson-9-steps-with-parameters)
 10. [Organizing with Floors](#lesson-10-organizing-with-floors)
 11. [Building a Complete Project](#lesson-11-building-a-complete-project)
-12. [Using the Debugger](#lesson-12-using-the-debugger)
+12. [Error Handling](#lesson-12-error-handling)
+13. [Working with Files](#lesson-13-working-with-files)
+14. [Randomness and Games](#lesson-14-randomness-and-games)
+15. [Using the Debugger](#lesson-15-using-the-debugger)
+16. [Visualizing Your Code](#lesson-16-visualizing-your-code)
 
 ---
 
@@ -113,6 +117,19 @@ See `/projects/tutorial/lesson_02_variables/lesson_02_variables.building`
 ✓ Numbers can be whole or decimal
 ✓ Text goes in "quotes"
 ✓ Booleans are `true` or `false`
+
+### Naming Rules
+
+When naming variables, steps, floors, and buildings, follow these rules:
+
+| ✓ Valid | ✗ Invalid |
+|---------|-----------|
+| `my_variable` | `my-variable` (no hyphens) |
+| `count2` | `2count` (can't start with digit) |
+| `firstName` | `first name` (no spaces) |
+| `_private` | `set` (reserved word) |
+
+> **Remember:** Names are case-sensitive! `myAge` and `myage` are different variables.
 
 ---
 
@@ -414,7 +431,113 @@ The project is organized into:
 
 ---
 
-## Lesson 12: Using the Debugger
+## Lesson 12: Error Handling
+
+### Concept: Handling Things That Go Wrong
+
+Programs can fail for many reasons: invalid user input, missing files, division by zero. **Error handling** lets you deal with these problems gracefully instead of crashing.
+
+### Example: `lesson_12_error_handling/`
+
+See the complete project in `/projects/tutorial/lesson_12_error_handling/`
+
+### What's Happening?
+
+- `attempt:` - Contains code that might fail
+- `if unsuccessful:` - Runs if something went wrong
+- `then continue:` - Always runs (for cleanup)
+- `problem_message` - Describes what went wrong
+
+### The Pattern
+
+```steps
+attempt:
+    set num to input as number
+if unsuccessful:
+    display "Error: " added to problem_message
+then continue:
+    display "Done processing"
+```
+
+### Try It
+
+1. Run the lesson and try entering invalid input
+2. Create a step that safely divides two numbers
+3. Add error handling to a file reading operation
+
+### Key Takeaways
+
+✓ Use `attempt:` around risky code  
+✓ Use `if unsuccessful:` to handle errors  
+✓ Use `problem_message` to see what went wrong  
+✓ Use `then continue:` for cleanup that always runs
+
+---
+
+## Lesson 13: Working with Files
+
+### Concept: Saving and Loading Data
+
+Files let your programs save data that persists after the program ends.
+
+### Example: `lesson_13_files/`
+
+See the complete project in `/projects/tutorial/lesson_13_files/`
+
+### What's Happening?
+
+- `write_file` - Saves text to a file
+- `read_file` - Reads file contents
+- `append_file` - Adds to end of file
+- `file_exists` - Checks if file exists
+- `write_csv` / `read_csv` - For structured data
+
+### Try It
+
+1. Run the lesson and see files being created
+2. Create a simple note-taking program
+3. Store and retrieve a list of names
+
+### Key Takeaways
+
+✓ `write_file` overwrites, `append_file` adds  
+✓ CSV files store rows as tables  
+✓ Always check if files exist before reading  
+✓ Great for saving game scores, settings, data
+
+---
+
+## Lesson 14: Randomness and Games
+
+### Concept: Adding Unpredictability
+
+Randomness makes programs more interesting! Use it for games, simulations, and testing.
+
+### Example: `lesson_14_random/`
+
+See the complete project in `/projects/tutorial/lesson_14_random/`
+
+### What's Happening?
+
+- `random_int` with min, max - Random number in range
+- `random_choice` with list - Pick random item
+
+### Try It
+
+1. Run the lesson and play the mini-game
+2. Create a dice-rolling simulator
+3. Build a random story generator
+
+### Key Takeaways
+
+✓ `random_int` for random numbers  
+✓ `random_choice` for random list items  
+✓ Combine with loops for simulations  
+✓ Perfect for games and testing
+
+---
+
+## Lesson 15: Using the Debugger
 
 ### Concept: Understanding Your Code
 
@@ -496,6 +619,77 @@ Open it with **Ctrl+Shift+D** or from the Debug menu.
 ✓ The Variables tab shows current values  
 ✓ The Call Stack shows nested step calls  
 ✓ Debugging helps you understand and fix your code
+
+---
+
+## Lesson 16: Visualizing Your Code
+
+### Concept: Project Diagrams
+
+The Steps CLI includes a diagram tool that generates ASCII art visualizations of your project structure. This helps you understand and document how your building, floors, and steps are organized.
+
+### Usage
+
+```bash
+# From the Steps directory
+python -m steps.main diagram <path_to_project>
+
+# Example
+python -m steps.main diagram projects/tip_calculator
+```
+
+### What the Diagram Shows
+
+- **🏢 Building**: Your main program
+- **📂 Floors**: Groups of related steps
+- **🔷 Steps**: Individual tasks with their parameters (`needs:`) and return types (`returns:`)
+- **Arrows**: Flow between components
+
+### Example Output
+
+```
+┌──────────────────────────────────────────────────────┐
+│ 🏢 BUILDING: my_project                               │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│  ┌────────────────────────────────────────────────┐  │
+│  │ 📂 FLOOR: math                                  │  │
+│  ├────────────────────────────────────────────────┤  │
+│  │                                                 │  │
+│  │    ┌────────────────────────────────────────┐   │  │
+│  │    │ 🔷 add_numbers                          │   │  │
+│  │    │   needs: a, b                           │   │  │
+│  │    │   returns: number                       │   │  │
+│  │    └────────────────────────────────────────┘   │  │
+│  │            │                                    │  │
+│  │            ▼                                    │  │
+│  │    ┌────────────────────────────────────────┐   │  │
+│  │    │ 🔷 multiply                             │   │  │
+│  │    └────────────────────────────────────────┘   │  │
+│  │                                                 │  │
+│  └────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
+```
+
+### Try It
+
+1. Generate a diagram for the tip calculator: `python -m steps.main diagram projects/tip_calculator`
+2. Generate a diagram for one of your own projects
+3. Compare the diagram to the project folder structure
+
+### When to Use Diagrams
+
+- **Understanding existing projects**: See how they're organized at a glance
+- **Planning new projects**: Design your structure before coding
+- **Documentation**: Include diagrams in your README files
+- **Teaching**: Show others how your code is structured
+
+### Key Takeaways
+
+✓ Use `steps diagram <path>` to visualize project structure  
+✓ Diagrams show buildings, floors, and steps  
+✓ Step parameters and return types are displayed  
+✓ Great for documentation and understanding code
 
 ---
 

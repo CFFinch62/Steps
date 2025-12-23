@@ -1,6 +1,0 @@
-building: test_input
-    display "What is your name? "
-    set name to input
-    display "Hello, " added to name added to "!"
-    exit
-    

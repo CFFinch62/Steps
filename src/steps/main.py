@@ -141,7 +141,7 @@ def generate_diagram(project_path: str) -> int:
         return 1
     
     from .diagram import generate_flow_diagram
-    diagram = generate_flow_diagram(building, environment)
+    diagram = generate_flow_diagram(building, environment, path.resolve())
     print(diagram)
     
     return 0

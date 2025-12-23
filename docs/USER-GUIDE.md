@@ -15,12 +15,13 @@ This guide will help you get started with Steps, an educational programming lang
 5. [Using the REPL](#using-the-repl)
 6. [Using the IDE](#using-the-ide)
 7. [Debugging](#debugging)
-8. [Language Basics](#language-basics)
-9. [Control Flow](#control-flow)
-10. [Working with Data](#working-with-data)
-11. [Creating Steps and Floors](#creating-steps-and-floors)
-12. [Error Handling](#error-handling)
-13. [Best Practices](#best-practices)
+8. [Diagram Tool](#diagram-tool)
+9. [Language Basics](#language-basics)
+10. [Control Flow](#control-flow)
+11. [Working with Data](#working-with-data)
+12. [Creating Steps and Floors](#creating-steps-and-floors)
+13. [Error Handling](#error-handling)
+14. [Best Practices](#best-practices)
 
 ---
 
@@ -292,6 +293,57 @@ The debug panel shows two tabs:
 
 ---
 
+## Diagram Tool
+
+The `steps diagram` command generates ASCII art flow diagrams showing the structure of your Steps programs.
+
+### Usage
+
+```bash
+python -m steps.main diagram <path_to_project>
+
+# Example
+python -m steps.main diagram projects/tip_calculator
+```
+
+### What It Shows
+
+The diagram displays your program's architecture:
+- **Building**: The main program (🏢)
+- **Floors**: Grouped functionality (📂)
+- **Steps**: Individual tasks (🔷) with their parameters and return types
+- **Flow arrows**: Relationships between components
+
+### Example Output
+
+```
+┌──────────────────────────────────────────────────────┐
+│ 🏢 BUILDING: tip_calculator                           │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│  ┌────────────────────────────────────────────────┐  │
+│  │ 📂 FLOOR: calculations                          │  │
+│  ├────────────────────────────────────────────────┤  │
+│  │                                                 │  │
+│  │    ┌────────────────────────────────────────┐   │  │
+│  │    │ 🔷 calculate_tip                        │   │  │
+│  │    │   needs: bill, rate                     │   │  │
+│  │    │   returns: number                       │   │  │
+│  │    └────────────────────────────────────────┘   │  │
+│  │                                                 │  │
+│  └────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
+```
+
+### When to Use It
+
+- **Understanding projects**: Quickly see how a project is organized
+- **Documentation**: Generate architecture diagrams for your README
+- **Teaching**: Show students how to structure their code
+- **Planning**: Visualize your project before building it
+
+---
+
 ## Language Basics
 
 ### Variables and Assignment
@@ -303,6 +355,32 @@ set name to "Alice"
 set age to 25
 set is_student to true
 set balance to 1234.56
+```
+
+### Naming Rules
+
+All names in Steps (variables, steps, floors, buildings, risers, parameters) must follow these rules:
+
+| Rule | Example |
+|------|---------|
+| Start with a letter or underscore | `my_var`, `_private` |
+| Contain only letters, digits, underscores | `count2`, `user_name` |
+| No spaces | ✗ `my variable` |
+| No hyphens | ✗ `my-variable` |
+| No reserved words | ✗ `set`, `if`, `display` |
+
+> **Case-sensitive:** `myAge` and `myage` are different variables.
+
+```steps
+# Good names
+user_name
+calculateTotal
+item_count_2
+
+# Bad names (will cause errors)
+user-name     # hyphen not allowed
+2nd_item      # can't start with digit
+my variable   # spaces not allowed
 ```
 
 ### Declaring Variables with Types

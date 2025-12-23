@@ -21,24 +21,8 @@ class CallStackListView(QListWidget):
         super().__init__(parent)
         self.itemClicked.connect(self._on_item_clicked)
         
-        # Style
-        self.setStyleSheet("""
-            QListWidget {
-                background-color: #1e1e1e;
-                color: #d4d4d4;
-                border: none;
-            }
-            QListWidget::item {
-                padding: 6px;
-                border-bottom: 1px solid #2d2d2d;
-            }
-            QListWidget::item:selected {
-                background-color: #264f78;
-            }
-            QListWidget::item:hover {
-                background-color: #2a2d2e;
-            }
-        """)
+        # Use object name for any theme-specific styling
+        self.setObjectName("callStackList")
     
     def update_from_snapshot(self, snapshot: DebugSnapshot):
         """Update display from debug snapshot."""

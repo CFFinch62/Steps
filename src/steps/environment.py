@@ -112,7 +112,7 @@ class Environment:
         
         # Input/output handlers (can be overridden for testing)
         self.input_handler: Callable[[], str] = input
-        self.output_handler: Callable[[str], None] = print
+        self.output_handler: Callable[[str], None] = lambda msg: print(msg, end='')
     
     # =========================================================================
     # Debugger Introspection Methods

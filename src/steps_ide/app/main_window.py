@@ -523,6 +523,12 @@ class StepsIDEMainWindow(QMainWindow):
         # Run menu
         run_menu = menubar.addMenu("&Run")
         
+        check_syntax_action = run_menu.addAction("&Check Syntax")
+        check_syntax_action.setShortcut("F6")
+        check_syntax_action.triggered.connect(self._check_syntax)
+        
+        run_menu.addSeparator()
+        
         run_project_action = run_menu.addAction("&Run Steps Project")
         run_project_action.setShortcut("Ctrl+F5")  # F5 is for debugging
         run_project_action.triggered.connect(self._run_current_project)
@@ -921,6 +927,76 @@ class StepsIDEMainWindow(QMainWindow):
         
         # Run in terminal
         self.terminal.run_steps_file(filepath)
+    
+    def _check_syntax(self):
+        """Check the current Steps project for syntax errors (F6)."""
+        filepath = self.editor_tabs.get_current_filepath()
+        
+        if not filepath:
+            self.statusbar.showMessage("No file open to check", 3000)
+            return
+        
+        # Check if it's a Steps file
+        if not any(filepath.endswith(ext) for ext in ['.building', '.floor', '.step']):
+            self.statusbar.showMessage("Not a Steps file (.building, .floor, or .step)", 3000)
+            return
+        
+        # Save first
+        self.editor_tabs.save_current()
+        
+        # Show terminal if hidden
+        if not self.terminal_container.isVisible():
+            self._toggle_terminal()
+        
+        # Load and check the project
+        try:
+            from pathlib import Path
+            from steps.loader import load_project
+            
+            file_path = Path(filepath)
+            
+            # Determine the project directory
+            # For .building files, the project is the parent directory
+            # For .step/.floor files, we need to find the project root
+            if filepath.endswith('.building'):
+                project_path = file_path.parent
+            else:
+                # For .step/.floor files, find the project root (directory containing .building)
+                project_path = file_path.parent
+                while project_path != project_path.parent:
+                    if list(project_path.glob('*.building')):
+                        break
+                    project_path = project_path.parent
+                else:
+                    self.terminal.write_output("Error: Could not find project root (no .building file found).\n")
+                    return
+            
+            # Clear terminal and show what we're checking
+            self.terminal.clear_output()
+            self.terminal.write_output(f"Checking: {file_path.name}\n")
+            self.terminal.write_output("-" * 40 + "\n")
+            
+            # Load the project to check for errors
+            building, env, errors = load_project(project_path)
+            
+            if errors:
+                # Show loading/syntax errors
+                for error in errors:
+                    self.terminal.write_output(error.format() + "\n")
+                self.statusbar.showMessage(f"Found {len(errors)} error(s)", 3000)
+            elif building is None:
+                self.terminal.write_output("Error: No building found in project.\n")
+                self.statusbar.showMessage("No building found", 3000)
+            else:
+                self.terminal.write_output("✓ No syntax errors found.\n")
+                self.statusbar.showMessage("No syntax errors found", 3000)
+                
+        except ImportError as e:
+            self.terminal.write_output(f"Error: Steps interpreter not available: {e}\n")
+        except Exception as e:
+            self.terminal.write_output(f"Unexpected error: {str(e)}\n")
+            import traceback
+            self.terminal.write_output(traceback.format_exc())
     
     # Status updates
     def _on_current_file_changed(self, filepath: str):

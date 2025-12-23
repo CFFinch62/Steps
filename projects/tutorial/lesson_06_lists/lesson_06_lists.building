@@ -49,7 +49,7 @@ building: lesson_06_lists
     display "=== Iterating Over Lists ==="
     display "Items in shopping list:"
     set item_number to 1
-    for each item in shopping_list
+    repeat for each item in shopping_list
         display (item_number as text) added to ". " added to item
         set item_number to item_number + 1
     
@@ -68,7 +68,7 @@ building: lesson_06_lists
     
     display ""
     display "Your favorite foods:"
-    for each food in favorites
+    repeat for each food in favorites
         display "- " added to food
     
     exit

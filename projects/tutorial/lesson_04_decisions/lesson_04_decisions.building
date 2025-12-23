@@ -18,11 +18,11 @@ building: lesson_04_decisions
     display ""
     display "=== Number Comparison ==="
     display "Enter a number: "
-    set number to input as number
+    set num to input as number
     
-    if number is equal to 0
+    if num is equal to 0
         display "The number is zero."
-    otherwise if number is greater than 0
+    otherwise if num is greater than 0
         display "The number is positive."
     otherwise
         display "The number is negative."

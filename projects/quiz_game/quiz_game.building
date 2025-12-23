@@ -1,0 +1,36 @@
+building: quiz_game
+    note: A fun trivia quiz game demonstrating lists, tables, and scoring!
+    
+    display "========================================"
+    display "      Welcome to Steps Quiz Game!"
+    display "========================================"
+    display ""
+    
+    note: Initialize scores
+    set score to 0
+    
+    note: Build our questions
+    call build_questions storing result in questions
+    set total_questions to length of questions
+    
+    note: Ask each question
+    set question_num to 1
+    
+    repeat for each q in questions
+        call ask_question with q, question_num storing result in is_correct
+        
+        if is_correct
+            set score to score + 1
+        
+        set question_num to question_num + 1
+    
+    note: Show final score
+    call show_final_score with score, total_questions
+    
+    call get_score_feedback with score, total_questions storing result in feedback
+    display feedback
+    
+    display ""
+    display "Thanks for playing!"
+    
+    exit

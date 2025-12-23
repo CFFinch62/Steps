@@ -5,5 +5,6 @@ step: get_lucky_number
 
     do:
         set lucky_num to 7
+        display "I have received nothing but still returned your lucky number"
         return lucky_num
 

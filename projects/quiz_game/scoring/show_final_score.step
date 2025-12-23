@@ -1,0 +1,13 @@
+step: show_final_score
+    belongs to: scoring
+    expects: score, total
+
+    note: Display the final score
+
+    do:
+        display "========================================"
+        display "           GAME OVER!"
+        display "========================================"
+        display ""
+        display "Your final score: " added to (score as text) added to " out of " added to (total as text)
+        display ""

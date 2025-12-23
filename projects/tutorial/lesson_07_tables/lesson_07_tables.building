@@ -3,7 +3,7 @@ building: lesson_07_tables
     note: Learn how to create and use tables (key-value pairs)
     
     display "=== Creating Tables ==="
-    set empty_table to [:]
+    set empty_table to [ : ]
     set person to ["name": "Alice", "age": 25, "city": "Boston"]
     
     display "Empty table: " added to (empty_table as text)

@@ -1,0 +1,60 @@
+step: build_questions
+    belongs to: questions
+    returns: questions
+
+    note: Build the list of quiz questions
+
+    do:
+        set questions to []
+        
+        note: Question 1
+        set q1 to [:]
+        set q1["question"] to "What keyword creates a variable in Steps?"
+        set q1["a"] to "var"
+        set q1["b"] to "set"
+        set q1["c"] to "let"
+        set q1["d"] to "define"
+        set q1["answer"] to "b"
+        add q1 to questions
+        
+        note: Question 2
+        set q2 to [:]
+        set q2["question"] to "What operator combines text in Steps?"
+        set q2["a"] to "+"
+        set q2["b"] to "concat"
+        set q2["c"] to "added to"
+        set q2["d"] to "&"
+        set q2["answer"] to "c"
+        add q2 to questions
+        
+        note: Question 3
+        set q3 to [:]
+        set q3["question"] to "What creates an empty table in Steps?"
+        set q3["a"] to "[]"
+        set q3["b"] to "{}"
+        set q3["c"] to "[:]"
+        set q3["d"] to "table()"
+        set q3["answer"] to "c"
+        add q3 to questions
+        
+        note: Question 4
+        set q4 to [:]
+        set q4["question"] to "What keyword is used for the else clause?"
+        set q4["a"] to "else"
+        set q4["b"] to "otherwise"
+        set q4["c"] to "elif"
+        set q4["d"] to "or"
+        set q4["answer"] to "b"
+        add q4 to questions
+        
+        note: Question 5
+        set q5 to [:]
+        set q5["question"] to "What ends a Steps program?"
+        set q5["a"] to "stop"
+        set q5["b"] to "end"
+        set q5["c"] to "quit"
+        set q5["d"] to "exit"
+        set q5["answer"] to "d"
+        add q5 to questions
+        
+        return questions

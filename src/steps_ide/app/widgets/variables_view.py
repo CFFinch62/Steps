@@ -28,27 +28,8 @@ class VariablesTreeView(QTreeWidget):
         self.setColumnWidth(1, 180)
         self.setColumnWidth(2, 70)
         
-        # Style
-        self.setStyleSheet("""
-            QTreeWidget {
-                background-color: #1e1e1e;
-                color: #d4d4d4;
-                border: none;
-            }
-            QTreeWidget::item:selected {
-                background-color: #264f78;
-            }
-            QTreeWidget::item:hover {
-                background-color: #2a2d2e;
-            }
-            QHeaderView::section {
-                background-color: #2d2d30;
-                color: #d4d4d4;
-                padding: 4px;
-                border: none;
-                border-bottom: 1px solid #3e3e42;
-            }
-        """)
+        # Use object name for any theme-specific styling
+        self.setObjectName("variablesTree")
     
     def update_from_snapshot(self, snapshot: DebugSnapshot):
         """Update display from debug snapshot."""
