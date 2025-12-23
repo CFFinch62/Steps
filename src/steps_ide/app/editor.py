@@ -890,3 +890,75 @@ class EditorTabs(QTabWidget):
             if bps:
                 all_breakpoints[filepath] = bps
         return all_breakpoints
+
+    def handle_item_deleted(self, path: str, is_directory: bool):
+        """Handle a file or folder being deleted - close affected tabs.
+        
+        For files: close the tab if that exact file was open.
+        For directories: close all tabs for files within that directory.
+        """
+        path = os.path.abspath(path)
+        tabs_to_close = []
+        
+        for filepath in list(self.editors.keys()):
+            if is_directory:
+                # Close all files within the deleted directory
+                if filepath.startswith(path + os.sep):
+                    tabs_to_close.append(filepath)
+            else:
+                # Close the exact file
+                if filepath == path:
+                    tabs_to_close.append(filepath)
+        
+        # Close tabs in reverse order to avoid index shifting issues
+        for filepath in tabs_to_close:
+            if filepath in self.editors:
+                editor = self.editors[filepath]
+                # Find the tab index
+                for i in range(self.count()):
+                    if self.widget(i) == editor:
+                        # Force close without save prompt (file is already deleted)
+                        del self.editors[filepath]
+                        self.removeTab(i)
+                        self.file_closed.emit(filepath)
+                        break
+
+    def handle_item_renamed(self, old_path: str, new_path: str):
+        """Handle a file or folder being renamed - update affected tabs.
+        
+        For files: update the tab's filepath reference.
+        For directories: update all tabs for files within that directory.
+        """
+        old_path = os.path.abspath(old_path)
+        new_path = os.path.abspath(new_path)
+        
+        paths_to_update = []
+        
+        for filepath in list(self.editors.keys()):
+            if filepath == old_path:
+                # Exact file renamed
+                paths_to_update.append((filepath, new_path))
+            elif filepath.startswith(old_path + os.sep):
+                # File inside renamed directory
+                relative = filepath[len(old_path):]
+                new_filepath = new_path + relative
+                paths_to_update.append((filepath, new_filepath))
+        
+        # Update editor references and tab titles
+        for old_filepath, new_filepath in paths_to_update:
+            if old_filepath in self.editors:
+                editor = self.editors[old_filepath]
+                # Update the editors dict
+                del self.editors[old_filepath]
+                self.editors[new_filepath] = editor
+                
+                # Update the editor's file_path attribute
+                editor.file_path = new_filepath
+                
+                # Update tab title and tooltip
+                for i in range(self.count()):
+                    if self.widget(i) == editor:
+                        self.setTabText(i, os.path.basename(new_filepath))
+                        self.setTabToolTip(i, new_filepath)
+                        break
+

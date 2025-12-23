@@ -263,6 +263,7 @@ def run_step(step_path: str, args: Optional[list] = None) -> int:
             name=riser.name,
             parameters=[p.name for p in riser.expects],
             returns=riser.returns.name if riser.returns else None,
+            declarations=riser.declarations,
             body=riser.body
         )
     

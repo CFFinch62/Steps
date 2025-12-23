@@ -351,6 +351,12 @@ class StepsIDEMainWindow(QMainWindow):
         new_action.setShortcut(QKeySequence.StandardKey.New)
         new_action.triggered.connect(self._new_file)
         
+        new_project_action = file_menu.addAction("New &Project...")
+        new_project_action.setShortcut("Ctrl+Shift+N")
+        new_project_action.triggered.connect(self._new_project)
+        
+        file_menu.addSeparator()
+        
         open_action = file_menu.addAction("&Open...")
         open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self._open_file)
@@ -431,6 +437,10 @@ class StepsIDEMainWindow(QMainWindow):
         find_action = edit_menu.addAction("&Find...")
         find_action.setShortcut(QKeySequence.StandardKey.Find)
         find_action.triggered.connect(self._find)
+        
+        replace_action = edit_menu.addAction("&Replace...")
+        replace_action.setShortcut("Ctrl+H")
+        replace_action.triggered.connect(self._replace)
         
         goto_action = edit_menu.addAction("&Go to Line...")
         goto_action.setShortcut("Ctrl+G")
@@ -523,9 +533,13 @@ class StepsIDEMainWindow(QMainWindow):
         # Run menu
         run_menu = menubar.addMenu("&Run")
         
-        check_syntax_action = run_menu.addAction("&Check Syntax")
-        check_syntax_action.setShortcut("F6")
-        check_syntax_action.triggered.connect(self._check_syntax)
+        check_file_action = run_menu.addAction("Check &File")
+        check_file_action.setShortcut("Shift+F6")
+        check_file_action.triggered.connect(self._check_file_syntax)
+        
+        check_project_action = run_menu.addAction("Check &Project")
+        check_project_action.setShortcut("F6")
+        check_project_action.triggered.connect(self._check_project_syntax)
         
         run_menu.addSeparator()
         
@@ -623,6 +637,8 @@ class StepsIDEMainWindow(QMainWindow):
         """Set up signal connections"""
         # File browser
         self.file_browser.file_opened.connect(self.editor_tabs.open_file)
+        self.file_browser.item_deleted.connect(self.editor_tabs.handle_item_deleted)
+        self.file_browser.item_renamed.connect(self.editor_tabs.handle_item_renamed)
         
         # Editor tabs
         self.editor_tabs.current_file_changed.connect(self._on_current_file_changed)
@@ -655,6 +671,100 @@ class StepsIDEMainWindow(QMainWindow):
     # File operations
     def _new_file(self):
         self.editor_tabs.new_file()
+    
+    def _new_project(self):
+        """Create a new Steps project with skeleton structure."""
+        # Get project name from user
+        project_name, ok = QInputDialog.getText(
+            self, "New Project",
+            "Enter project name:",
+            QLineEdit.EchoMode.Normal
+        )
+        
+        if not ok or not project_name.strip():
+            return
+        
+        project_name = project_name.strip()
+        
+        # Sanitize name for filesystem (remove/replace problematic characters)
+        safe_name = "".join(c if c.isalnum() or c in "_-" else "_" for c in project_name)
+        if not safe_name:
+            QMessageBox.critical(self, "Error", "Invalid project name.")
+            return
+        
+        # Determine the projects directory (relative to the running IDE)
+        # Try to find the projects folder in the Steps workspace
+        projects_dir = None
+        
+        # Check if file browser is currently in a Steps workspace with a projects folder
+        if self.file_browser.current_root:
+            current_root = Path(self.file_browser.current_root)
+            # Look for projects folder in current root or parent directories
+            for parent in [current_root] + list(current_root.parents):
+                potential_projects = parent / "projects"
+                if potential_projects.is_dir():
+                    projects_dir = potential_projects
+                    break
+        
+        # If not found, try the default Steps location
+        if not projects_dir:
+            default_projects = Path(__file__).parent.parent.parent.parent.parent / "projects"
+            if default_projects.is_dir():
+                projects_dir = default_projects
+        
+        # Last resort: ask user to choose location
+        if not projects_dir or not projects_dir.is_dir():
+            folder = QFileDialog.getExistingDirectory(
+                self, "Select Projects Folder",
+                str(Path.home())
+            )
+            if not folder:
+                return
+            projects_dir = Path(folder)
+        
+        # Create project structure
+        project_path = projects_dir / safe_name
+        
+        if project_path.exists():
+            QMessageBox.critical(
+                self, "Error",
+                f"A project named '{safe_name}' already exists."
+            )
+            return
+        
+        try:
+            # Create project folder
+            project_path.mkdir(parents=True)
+            
+            # Create the .building file
+            building_file = project_path / f"{safe_name}.building"
+            building_content = f"building: {safe_name}\n    note: New Steps project\n    exit\n"
+            building_file.write_text(building_content)
+            
+            # Create floor1 folder
+            floor1_path = project_path / "floor1"
+            floor1_path.mkdir()
+            
+            # Create floor1.floor file
+            floor_file = floor1_path / "floor1.floor"
+            floor_content = "floor: floor1\n    step: step1\n"
+            floor_file.write_text(floor_content)
+            
+            # Create step1.step file
+            step_file = floor1_path / "step1.step"
+            step_content = "step: step1\n    note: First step\n    return\n"
+            step_file.write_text(step_content)
+            
+            # Navigate file browser to the new project
+            self.file_browser.navigate_to(str(project_path))
+            
+            # Open the building file in editor
+            self.editor_tabs.open_file(str(building_file))
+            
+            self.statusbar.showMessage(f"Created new project: {safe_name}", 5000)
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to create project: {e}")
     
     def _open_file(self):
         filepath, _ = QFileDialog.getOpenFileName(
@@ -735,6 +845,79 @@ class StepsIDEMainWindow(QMainWindow):
                     editor.setTextCursor(found)
                 else:
                     self.statusbar.showMessage(f"'{text}' not found", 3000)
+    
+    def _replace(self):
+        """Find and replace all instances of a string in the current file."""
+        editor = self.editor_tabs.get_current_editor()
+        if not editor:
+            self.statusbar.showMessage("No file open", 3000)
+            return
+        
+        # Create a custom dialog for find/replace
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Replace")
+        dialog.setFixedSize(400, 150)
+        
+        layout = QVBoxLayout(dialog)
+        
+        form = QFormLayout()
+        find_input = QLineEdit()
+        find_input.setPlaceholderText("Text to find")
+        form.addRow("Find:", find_input)
+        
+        replace_input = QLineEdit()
+        replace_input.setPlaceholderText("Replace with")
+        form.addRow("Replace with:", replace_input)
+        
+        layout.addLayout(form)
+        
+        buttons = QDialogButtonBox()
+        replace_all_btn = buttons.addButton("Replace All", QDialogButtonBox.ButtonRole.AcceptRole)
+        cancel_btn = buttons.addButton(QDialogButtonBox.StandardButton.Cancel)
+        
+        layout.addWidget(buttons)
+        
+        replace_all_btn.clicked.connect(dialog.accept)
+        cancel_btn.clicked.connect(dialog.reject)
+        
+        find_input.setFocus()
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            find_text = find_input.text()
+            replace_text = replace_input.text()
+            
+            if not find_text:
+                self.statusbar.showMessage("Nothing to find", 3000)
+                return
+            
+            # Get the entire document text
+            doc = editor.document()
+            full_text = doc.toPlainText()
+            
+            # Count occurrences
+            count = full_text.count(find_text)
+            
+            if count == 0:
+                self.statusbar.showMessage(f"'{find_text}' not found", 3000)
+                return
+            
+            # Replace all occurrences
+            new_text = full_text.replace(find_text, replace_text)
+            
+            # Preserve cursor position as best as possible
+            cursor = editor.textCursor()
+            pos = cursor.position()
+            
+            # Update document
+            editor.setPlainText(new_text)
+            
+            # Try to restore cursor position (adjusted if text length changed)
+            new_pos = min(pos, len(new_text))
+            cursor = editor.textCursor()
+            cursor.setPosition(new_pos)
+            editor.setTextCursor(cursor)
+            
+            self.statusbar.showMessage(f"Replaced {count} occurrence(s)", 3000)
     
     def _goto_line(self):
         editor = self.editor_tabs.get_current_editor()
@@ -928,8 +1111,69 @@ class StepsIDEMainWindow(QMainWindow):
         # Run in terminal
         self.terminal.run_steps_file(filepath)
     
-    def _check_syntax(self):
-        """Check the current Steps project for syntax errors (F6)."""
+    def _check_file_syntax(self):
+        """Check only the current file for syntax errors (Shift+F6)."""
+        filepath = self.editor_tabs.get_current_filepath()
+        
+        if not filepath:
+            self.statusbar.showMessage("No file open to check", 3000)
+            return
+        
+        # Check if it's a Steps file
+        if not any(filepath.endswith(ext) for ext in ['.building', '.floor', '.step']):
+            self.statusbar.showMessage("Not a Steps file (.building, .floor, or .step)", 3000)
+            return
+        
+        # Save first
+        self.editor_tabs.save_current()
+        
+        # Show terminal if hidden
+        if not self.terminal_container.isVisible():
+            self._toggle_terminal()
+        
+        try:
+            from pathlib import Path
+            from steps.parser import parse_building, parse_floor, parse_step
+            
+            file_path = Path(filepath)
+            
+            # Read the file content
+            source = file_path.read_text(encoding='utf-8')
+            
+            # Clear terminal and show what we're checking
+            self.terminal.clear_output()
+            self.terminal.write_output(f"Checking file: {file_path.name}\n")
+            self.terminal.write_output("-" * 40 + "\n")
+            
+            # Parse based on file extension
+            if filepath.endswith('.building'):
+                result = parse_building(source, file_path)
+            elif filepath.endswith('.floor'):
+                result = parse_floor(source, file_path)
+            elif filepath.endswith('.step'):
+                result = parse_step(source, file_path)
+            else:
+                self.terminal.write_output("Unknown file type.\n")
+                return
+            
+            # Check for errors
+            if result.errors:
+                for error in result.errors:
+                    self.terminal.write_output(error.format() + "\n")
+                self.statusbar.showMessage(f"Found {len(result.errors)} error(s)", 3000)
+            else:
+                self.terminal.write_output("✓ No syntax errors found in this file.\n")
+                self.statusbar.showMessage("No syntax errors found", 3000)
+                
+        except ImportError as e:
+            self.terminal.write_output(f"Error: Steps interpreter not available: {e}\n")
+        except Exception as e:
+            self.terminal.write_output(f"Unexpected error: {str(e)}\n")
+            import traceback
+            self.terminal.write_output(traceback.format_exc())
+    
+    def _check_project_syntax(self):
+        """Check the entire Steps project for syntax errors (F6)."""
         filepath = self.editor_tabs.get_current_filepath()
         
         if not filepath:
@@ -973,7 +1217,7 @@ class StepsIDEMainWindow(QMainWindow):
             
             # Clear terminal and show what we're checking
             self.terminal.clear_output()
-            self.terminal.write_output(f"Checking: {file_path.name}\n")
+            self.terminal.write_output(f"Checking project: {project_path.name}\n")
             self.terminal.write_output("-" * 40 + "\n")
             
             # Load the project to check for errors
@@ -988,7 +1232,7 @@ class StepsIDEMainWindow(QMainWindow):
                 self.terminal.write_output("Error: No building found in project.\n")
                 self.statusbar.showMessage("No building found", 3000)
             else:
-                self.terminal.write_output("✓ No syntax errors found.\n")
+                self.terminal.write_output("✓ No syntax errors found in project.\n")
                 self.statusbar.showMessage("No syntax errors found", 3000)
                 
         except ImportError as e:

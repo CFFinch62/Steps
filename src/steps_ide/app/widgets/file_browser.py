@@ -354,6 +354,14 @@ class FileBrowser(Widget):
             return
 
         cursor_path = Path(str(tree.cursor_node.data.path))
+        
+        # Check if the path still exists (it may be stale after parent folder rename)
+        if not cursor_path.exists():
+            # Path is stale - refresh the tree and notify user
+            tree.reload()
+            self.app.notify("Path no longer valid. Tree refreshed - please re-select the item.", severity="warning")
+            return
+        
         is_dir = cursor_path.is_dir()
 
         # Don't allow deleting the root path
@@ -385,6 +393,13 @@ class FileBrowser(Widget):
             return
 
         cursor_path = Path(str(tree.cursor_node.data.path))
+        
+        # Check if the path still exists (it may be stale after parent folder rename)
+        if not cursor_path.exists():
+            # Path is stale - refresh the tree and notify user
+            tree.reload()
+            self.app.notify("Path no longer valid. Tree refreshed - please re-select the item.", severity="warning")
+            return
         
         # Don't allow renaming the root path
         if str(cursor_path) == self.root_path:

@@ -21,7 +21,7 @@ step: list_contacts
             display ""
             
             set index to 0
-            for each contact in contact_list
+            repeat for each contact in contact_list
                 set index to index + 1
                 display "Contact #" added to (index as text) added to ":"
                 call show_contact with contact

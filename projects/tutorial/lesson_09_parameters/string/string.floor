@@ -1,4 +1,4 @@
-floor: text
+floor: string
 
     step: greet_person
 

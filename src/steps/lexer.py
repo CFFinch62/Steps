@@ -109,6 +109,7 @@ class TokenType(Enum):
     MINUS = auto()             # "-"
     MULTIPLY = auto()          # "*"
     DIVIDE = auto()            # "/"
+    MODULO = auto()            # "modulo"
     
     # Punctuation
     COLON = auto()             # ":"
@@ -245,6 +246,9 @@ KEYWORDS = {
     
     # Comparison
     "equals": TokenType.EQUALS,
+    
+    # Math operators (word-based)
+    "modulo": TokenType.MODULO,
     
     # Literals
     "true": TokenType.TRUE,

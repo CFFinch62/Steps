@@ -10,12 +10,15 @@ step: search_contact
         found_count as number
         name_lower as text
         search_lower as text
-
+        
     do:
         display ""
         display "=== Search Contact ==="
         display "Enter name to search: "
         set search_name to input as text
+
+        note: Convert search term to lowercase for case-insensitive matching
+        call lowercase with search_name storing result in search_lower
 
         set found to false
         set found_count to 0
@@ -24,13 +27,12 @@ step: search_contact
         display "Search results for: " added to search_name
         display ""
 
-        for each contact in contact_list
-            set name_lower to contact["name"]
-            set search_lower to search_name
+        repeat for each contact in contact_list
+            note: Convert contact name to lowercase for comparison
+            call lowercase with contact["name"] storing result in name_lower
 
-            call simple_match with name_lower, search_lower storing result in matches
-
-            if matches is equal to true
+            note: Check if the contact name contains the search term
+            if name_lower contains search_lower
                 set found to true
                 set found_count to found_count + 1
                 display "Match #" added to (found_count as text) added to ":"
@@ -39,41 +41,4 @@ step: search_contact
 
         if found is equal to false
             display "No contacts found matching '" added to search_name added to "'"
-
-    riser: simple_match
-        expects: text1, text2
-        returns: result
-
-        declare:
-            len1 as number
-            len2 as number
-            i as number
-            j as number
-            match as boolean
-
-        do:
-            set len1 to length of text1
-            set len2 to length of text2
-            set result to false
-
-            if len2 is greater than len1
-                return result
-
-            set i to 0
-            while i is less than or equal to (len1 - len2)
-                set match to true
-                set j to 0
-
-                while j is less than len2
-                    if text1[i + j] is not equal to text2[j]
-                        set match to false
-                    set j to j + 1
-
-                if match is equal to true
-                    set result to true
-                    return result
-
-                set i to i + 1
-
-            return result
 

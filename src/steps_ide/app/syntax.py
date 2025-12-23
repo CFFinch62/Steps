@@ -78,7 +78,8 @@ STEPS_COMPARISON_OPERATORS = [
     'character at',
     'is in',
     'contains',
-    'equals'
+    'equals',
+    'modulo'
 ]
 
 

@@ -1,5 +1,5 @@
 step: show_menu
-    belongs to: display
+    belongs to: console_ouput
     expects: nothing
     returns: choice
     

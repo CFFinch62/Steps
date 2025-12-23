@@ -1,10 +1,10 @@
 step: is_positive
     belongs to: validation
-    expects: number
+    expects: num
     returns: result
     
     do:
-        if number is greater than 0
+        if num is greater than 0
             set result to true
         otherwise
             set result to false

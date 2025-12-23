@@ -115,11 +115,13 @@ class RiserNode(ASTNode):
         name: Riser name
         expects: Parameters (may be empty)
         returns: Return declaration or None
+        declarations: Variable declarations (may be empty)
         body: Statements to execute
     """
     name: str
     expects: List[ParameterNode] = field(default_factory=list)
     returns: Optional[ReturnDeclaration] = None
+    declarations: List[DeclarationNode] = field(default_factory=list)
     body: List[StatementNode] = field(default_factory=list)
 
 

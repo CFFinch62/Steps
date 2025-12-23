@@ -327,6 +327,7 @@ class Loader:
                 name=riser.name,
                 parameters=[p.name for p in riser.expects],
                 returns=riser.returns.name if riser.returns else None,
+                declarations=riser.declarations,
                 body=riser.body
             )
         

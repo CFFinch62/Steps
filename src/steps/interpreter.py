@@ -343,6 +343,14 @@ class Interpreter:
             for param_name, arg_value in zip(riser_def.parameters, arguments):
                 self.env.set_variable(param_name, arg_value, is_declaration=True)
             
+            # Process declarations (if any)
+            for decl in riser_def.declarations:
+                self.env.declare_variable(
+                    decl.name,
+                    decl.type_name,
+                    decl.is_fixed
+                )
+            
             # Execute riser body
             try:
                 for statement in riser_def.body:
@@ -627,6 +635,8 @@ class Interpreter:
             return builtins.multiply_numbers(left, right, loc)
         if op == "/":
             return builtins.divide_numbers(left, right, loc)
+        if op == "modulo":
+            return builtins.modulo_numbers(left, right, loc)
         
         # Comparison
         if op in ("is equal to", "equals"):

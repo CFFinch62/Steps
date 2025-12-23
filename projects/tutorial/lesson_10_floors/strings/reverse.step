@@ -1,6 +1,6 @@
 step: reverse
-    belongs to: text
-    expects: input
+    belongs to: strings
+    expects: string
     returns: result
     
     declare:
@@ -10,11 +10,11 @@ step: reverse
     
     do:
         set result to ""
-        set len to length of input
+        set len to length of string
         set index to len - 1
         
-        while index is greater than or equal to 0
-            set result to result added to input[index]
+        repeat while index is greater than or equal to 0
+            set result to result added to string[index]
             set index to index - 1
         
         return result

@@ -1,4 +1,4 @@
-step: add
+step: add_together
     belongs to: math
     expects: a, b
     returns: result

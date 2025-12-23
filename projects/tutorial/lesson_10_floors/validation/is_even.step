@@ -1,13 +1,13 @@
 step: is_even
     belongs to: validation
-    expects: number
+    expects: num
     returns: result
     
     declare:
         remainder as number
     
     do:
-        set remainder to number % 2
+        set remainder to num modulo 2
         
         if remainder is equal to 0
             set result to true

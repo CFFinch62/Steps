@@ -1,6 +1,6 @@
 step: uppercase
-    belongs to: text
-    expects: input
+    belongs to: strings
+    expects: string
     returns: result
     
     declare:
@@ -14,8 +14,8 @@ step: uppercase
         set result to ""
         set index to 0
         
-        while index is less than (length of input)
-            set char to input[index]
+        repeat while index is less than (length of string)
+            set char to string[index]
             
             note: Simple uppercase conversion for a-z
             if char is equal to "a"

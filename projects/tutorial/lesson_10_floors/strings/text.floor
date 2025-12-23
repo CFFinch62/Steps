@@ -1,4 +1,4 @@
-floor: text
+floor: strings
 
     step: uppercase
     step: lowercase

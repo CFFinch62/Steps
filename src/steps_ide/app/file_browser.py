@@ -116,6 +116,8 @@ class FileBrowserWidget(QWidget):
     file_opened = pyqtSignal(str)  # file path
     file_created = pyqtSignal(str)  # file path
     folder_changed = pyqtSignal(str)  # folder path
+    item_deleted = pyqtSignal(str, bool)  # path, is_directory
+    item_renamed = pyqtSignal(str, str)  # old_path, new_path
     
     def __init__(self, settings: SettingsManager, parent=None):
         super().__init__(parent)
@@ -549,6 +551,8 @@ class FileBrowserWidget(QWidget):
             try:
                 os.rename(path, new_path)
                 self._refresh()
+                # Notify listeners about the rename
+                self.item_renamed.emit(path, new_path)
             except OSError as e:
                 QMessageBox.critical(self, "Error", f"Could not rename: {e}")
     
@@ -573,6 +577,8 @@ class FileBrowserWidget(QWidget):
                 else:
                     os.remove(path)
                 self._refresh()
+                # Notify listeners about the deletion
+                self.item_deleted.emit(path, is_dir)
             except OSError as e:
                 QMessageBox.critical(self, "Error", f"Could not delete: {e}")
     

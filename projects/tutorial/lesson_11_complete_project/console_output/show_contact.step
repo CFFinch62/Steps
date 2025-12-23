@@ -1,5 +1,5 @@
 step: show_contact
-    belongs to: display
+    belongs to: console_output
     expects: contact
     returns: nothing
     

@@ -216,6 +216,55 @@ def get_xterm_html(font_family: str = "JetBrains Mono", font_size: int = 14,
         .xterm {{
             padding: 4px;
         }}
+        
+        /* Context menu styles */
+        #context-menu {{
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: #2d2d30;
+            border: 1px solid #454545;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            min-width: 160px;
+            padding: 4px 0;
+            font-family: "Segoe UI", sans-serif;
+            font-size: 13px;
+        }}
+        
+        .context-menu-item {{
+            padding: 8px 16px;
+            color: #cccccc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }}
+        
+        .context-menu-item:hover {{
+            background: #094771;
+        }}
+        
+        .context-menu-item.disabled {{
+            color: #6e6e6e;
+            cursor: default;
+        }}
+        
+        .context-menu-item.disabled:hover {{
+            background: transparent;
+        }}
+        
+        .context-menu-shortcut {{
+            color: #888;
+            font-size: 11px;
+            margin-left: 24px;
+        }}
+        
+        .context-menu-separator {{
+            height: 1px;
+            background: #454545;
+            margin: 4px 0;
+        }}
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
@@ -225,7 +274,44 @@ def get_xterm_html(font_family: str = "JetBrains Mono", font_size: int = 14,
 </head>
 <body>
     <div id="terminal"></div>
+    <div id="context-menu">
+        <div class="context-menu-item" id="menu-copy">
+            <span>Copy</span>
+            <span class="context-menu-shortcut">Ctrl+Shift+C</span>
+        </div>
+        <div class="context-menu-item" id="menu-paste">
+            <span>Paste</span>
+            <span class="context-menu-shortcut">Ctrl+Shift+V</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="menu-clear">
+            <span>Clear Terminal</span>
+            <span class="context-menu-shortcut"></span>
+        </div>
+        <div class="context-menu-item" id="menu-select-all">
+            <span>Select All</span>
+            <span class="context-menu-shortcut">Ctrl+Shift+A</span>
+        </div>
+    </div>
     <script>
+        // Clipboard helper functions
+        async function copyToClipboard(text) {{
+            try {{
+                await navigator.clipboard.writeText(text);
+            }} catch (err) {{
+                console.error('Failed to copy: ', err);
+            }}
+        }}
+        
+        async function pasteFromClipboard() {{
+            try {{
+                return await navigator.clipboard.readText();
+            }} catch (err) {{
+                console.error('Failed to paste: ', err);
+                return '';
+            }}
+        }}
+        
         const term = new Terminal({{
             cursorBlink: true,
             fontSize: {font_size},
@@ -288,6 +374,123 @@ def get_xterm_html(font_family: str = "JetBrains Mono", font_size: int = 14,
         }});
         
         term.focus();
+        
+        // Handle copy/paste with Ctrl+Shift+C/V
+        document.addEventListener('keydown', async function(e) {{
+            // Ctrl+Shift+C = Copy
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {{
+                e.preventDefault();
+                const selection = term.getSelection();
+                if (selection) {{
+                    await copyToClipboard(selection);
+                }}
+            }}
+            // Ctrl+Shift+V = Paste
+            if (e.ctrlKey && e.shiftKey && e.key === 'V') {{
+                e.preventDefault();
+                const text = await pasteFromClipboard();
+                if (text && bridge) {{
+                    bridge.sendData(text);
+                }}
+            }}
+            // Ctrl+Shift+A = Select All
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {{
+                e.preventDefault();
+                term.selectAll();
+            }}
+        }});
+        
+        // Context menu handling
+        const contextMenu = document.getElementById('context-menu');
+        const menuCopy = document.getElementById('menu-copy');
+        const menuPaste = document.getElementById('menu-paste');
+        const menuClear = document.getElementById('menu-clear');
+        const menuSelectAll = document.getElementById('menu-select-all');
+        
+        function hideContextMenu() {{
+            contextMenu.style.display = 'none';
+        }}
+        
+        function showContextMenu(x, y) {{
+            // Update copy item state based on selection
+            const hasSelection = term.getSelection().length > 0;
+            if (hasSelection) {{
+                menuCopy.classList.remove('disabled');
+            }} else {{
+                menuCopy.classList.add('disabled');
+            }}
+            
+            // Position menu, ensuring it stays within viewport
+            const menuWidth = 180;
+            const menuHeight = 140;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let menuX = x;
+            let menuY = y;
+            
+            if (x + menuWidth > viewportWidth) {{
+                menuX = viewportWidth - menuWidth - 5;
+            }}
+            if (y + menuHeight > viewportHeight) {{
+                menuY = viewportHeight - menuHeight - 5;
+            }}
+            
+            contextMenu.style.left = menuX + 'px';
+            contextMenu.style.top = menuY + 'px';
+            contextMenu.style.display = 'block';
+        }}
+        
+        // Right-click handler
+        document.getElementById('terminal').addEventListener('contextmenu', function(e) {{
+            e.preventDefault();
+            showContextMenu(e.clientX, e.clientY);
+        }});
+        
+        // Hide menu on click elsewhere
+        document.addEventListener('click', function(e) {{
+            if (!contextMenu.contains(e.target)) {{
+                hideContextMenu();
+            }}
+        }});
+        
+        // Hide menu on escape
+        document.addEventListener('keydown', function(e) {{
+            if (e.key === 'Escape') {{
+                hideContextMenu();
+            }}
+        }});
+        
+        // Menu item click handlers
+        menuCopy.addEventListener('click', async function() {{
+            const selection = term.getSelection();
+            if (selection) {{
+                await copyToClipboard(selection);
+            }}
+            hideContextMenu();
+            term.focus();
+        }});
+        
+        menuPaste.addEventListener('click', async function() {{
+            const text = await pasteFromClipboard();
+            if (text && bridge) {{
+                bridge.sendData(text);
+            }}
+            hideContextMenu();
+            term.focus();
+        }});
+        
+        menuClear.addEventListener('click', function() {{
+            term.clear();
+            hideContextMenu();
+            term.focus();
+        }});
+        
+        menuSelectAll.addEventListener('click', function() {{
+            term.selectAll();
+            hideContextMenu();
+            term.focus();
+        }});
         
         window.clearTerminal = function() {{
             term.clear();

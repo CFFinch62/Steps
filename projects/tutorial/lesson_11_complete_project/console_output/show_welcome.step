@@ -1,5 +1,5 @@
 step: show_welcome
-    belongs to: display
+    belongs to: conosle_output
     expects: nothing
     returns: nothing
     

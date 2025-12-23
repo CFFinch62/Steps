@@ -423,6 +423,11 @@ class Parser:
             if self.check(TokenType.DEDENT, TokenType.EOF):
                 break
             
+            # Skip notes (comments) in declaration block
+            if self.match(TokenType.NOTE):
+                self.match(TokenType.NEWLINE)
+                continue
+            
             # name as type [fixed]
             name_token = self.expect(TokenType.IDENTIFIER, "Expected variable name in declaration")
             self.expect(TokenType.AS, "Expected 'as' after variable name")
@@ -464,6 +469,7 @@ class Parser:
         
         expects: List[ParameterNode] = []
         returns: Optional[ReturnDeclaration] = None
+        declarations: List[DeclarationNode] = []
         body: List[StatementNode] = []
         
         while not self.check(TokenType.DEDENT, TokenType.EOF):
@@ -477,6 +483,9 @@ class Parser:
             elif self.match(TokenType.RETURNS):
                 returns = self.parse_return_declaration()
                 self.match(TokenType.NEWLINE)
+            elif self.match(TokenType.DECLARE):
+                self.match(TokenType.NEWLINE)
+                declarations = self.parse_declarations()
             elif self.match(TokenType.DO):
                 self.match(TokenType.NEWLINE)
                 body = self.parse_statement_block()
@@ -494,6 +503,7 @@ class Parser:
             name=name,
             expects=expects,
             returns=returns,
+            declarations=declarations,
             body=body
         )
     
@@ -1044,7 +1054,7 @@ class Parser:
         return left
     
     def parse_multiplication(self) -> ExpressionNode:
-        """Parse: multiplication and division."""
+        """Parse: multiplication, division, and modulo."""
         left = self.parse_unary()
         
         while True:
@@ -1064,6 +1074,15 @@ class Parser:
                     location=self.location_from(op),
                     left=left,
                     operator="/",
+                    right=right
+                )
+            elif self.match(TokenType.MODULO):
+                op = self.previous
+                right = self.parse_unary()
+                left = BinaryOpNode(
+                    location=self.location_from(op),
+                    left=left,
+                    operator="modulo",
                     right=right
                 )
             else:

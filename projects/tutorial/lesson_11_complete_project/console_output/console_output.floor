@@ -1,4 +1,4 @@
-floor: display
+floor: console_output
 
     step: show_welcome
     step: show_menu

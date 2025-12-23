@@ -33,6 +33,7 @@ class RiserDefinition:
     name: str
     parameters: List[str]
     returns: Optional[str]
+    declarations: Any  # List[DeclarationNode]
     body: Any  # List[StatementNode]
 
 

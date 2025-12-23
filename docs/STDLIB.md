@@ -39,20 +39,46 @@ call round with 3.7 storing result in r     # 4
 
 | Function | Parameters | Returns | Description |
 |----------|------------|---------|-------------|
-| `uppercase` | `s as text` | `text` | Convert to uppercase |
-| `lowercase` | `s as text` | `text` | Convert to lowercase |
-| `trim` | `s as text` | `text` | Remove leading/trailing spaces |
 | `reverse` | `s as text` | `text` | Reverse text |
 | `repeat_text` | `s as text, count as number` | `text` | Repeat text N times |
 
 ### Examples
 
 ```steps
-call uppercase with "hello" storing result in u    # "HELLO"
-call lowercase with "HELLO" storing result in l    # "hello"
-call trim with "  hi  " storing result in t        # "hi"
 call reverse with "hello" storing result in r      # "olleh"
 call repeat_text with "*", 5 storing result in s   # "*****"
+```
+
+---
+
+## Native String Functions
+
+These string functions are *native* - implemented in Python for better performance.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `lowercase` | `text` | `text` | Convert to lowercase |
+| `uppercase` | `text` | `text` | Convert to uppercase |
+| `trim` | `text` | `text` | Remove leading/trailing spaces |
+| `slice` | `text, start, end` | `text` | Extract substring (start inclusive, end exclusive) |
+| `index_of` | `text, search` | `number` | Find position of substring (-1 if not found) |
+| `replace` | `text, old, new` | `text` | Replace all occurrences |
+| `characters` | `text` | `list` | Convert text to list of characters |
+
+### Examples
+
+```steps
+call lowercase with "HELLO" storing result in l    # "hello"
+call uppercase with "hello" storing result in u    # "HELLO"
+call trim with "  hi  " storing result in t        # "hi"
+call slice with "hello", 0, 2 storing result in s  # "he"
+call index_of with "hello", "ll" storing result in i  # 2
+call replace with "hello", "l", "L" storing result in r  # "heLLo"
+
+note: Iterate over a string character by character
+call characters with "hello" storing result in chars
+repeat for each char in chars
+    display char
 ```
 
 ---
@@ -166,9 +192,9 @@ stdlib/
 │   └── round.step
 └── strings/
     ├── strings.floor
-    ├── uppercase.step
-    ├── lowercase.step
-    ├── trim.step
     ├── reverse.step
     └── repeat_text.step
 ```
+
+> [!NOTE]
+> Native string functions (`lowercase`, `uppercase`, `trim`, `slice`, etc.) are implemented in Python in `builtins/text.py`, not as stdlib .step files.
