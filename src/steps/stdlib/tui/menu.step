@@ -1,0 +1,24 @@
+step: menu
+    belongs to: tui
+    expects: options as list
+    returns: nothing
+
+    note: Display a numbered menu from a list of options
+    note: Example: call menu with ["Add", "Delete", "Exit"]
+    note: Output:
+    note:   1. Add
+    note:   2. Delete
+    note:   3. Exit
+
+    declare:
+        i as number
+        option as text
+        number_str as text
+
+    do:
+        set i to 1
+        
+        repeat for each option in options
+            set number_str to i as text
+            display "  " added to number_str added to ". " added to option
+            set i to i + 1

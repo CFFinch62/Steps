@@ -1,9 +1,10 @@
-"""Steps IDE widgets."""
+"""Steps IDE widgets.
 
-from .file_browser import FileBrowser
-from .project_browser import ProjectBrowser
-from .status_bar import StatusBar
-from .tab_bar import TabBar
-from .terminal_panel import TerminalPanel
+Only includes PyQt6-based widgets used by the GUI IDE.
+Textual-based widgets from the old TUI IDE are not exported.
+"""
 
-__all__ = ["FileBrowser", "ProjectBrowser", "StatusBar", "TabBar", "TerminalPanel"]
+from .variables_view import VariablesTreeView
+from .call_stack_view import CallStackListView
+
+__all__ = ["VariablesTreeView", "CallStackListView"]

@@ -10,6 +10,10 @@ from .text import (
     text_slice, text_lowercase, text_uppercase, text_trim,
     text_index_of, text_replace, text_characters
 )
+from .tui import (
+    tui_box, tui_line, tui_banner, tui_center_text,
+    tui_pad_text, tui_progress_bar
+)
 
 NATIVE_FUNCTIONS = {
     # Random functions
@@ -76,4 +80,30 @@ NATIVE_FUNCTIONS = {
         "function": text_characters,
         "params": ["text"],
     },
+    # TUI functions
+    "box": {
+        "function": tui_box,
+        "params": ["content", "width"],
+    },
+    "line": {
+        "function": tui_line,
+        "params": ["width", "style"],
+    },
+    "banner": {
+        "function": tui_banner,
+        "params": ["title", "width"],
+    },
+    "center_text": {
+        "function": tui_center_text,
+        "params": ["text", "width"],
+    },
+    "pad_text": {
+        "function": tui_pad_text,
+        "params": ["text", "width", "align"],
+    },
+    "progress_bar": {
+        "function": tui_progress_bar,
+        "params": ["current", "total", "width"],
+    },
 }
+

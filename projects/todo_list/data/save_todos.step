@@ -6,4 +6,4 @@ step: save_todos
 
     do:
         call write_csv with filename, todos
-        display "Saved " added to (length of todos as text) added to " todo(s) to " added to filename
+        display "Saved " added to (length of todos) as text added to " todo(s) to " added to filename

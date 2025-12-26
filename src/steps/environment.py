@@ -86,6 +86,18 @@ class Scope:
         if self.parent:
             return self.parent.exists(name)
         return False
+    
+    def update_in_scope(self, name: str, value: StepsValue) -> bool:
+        """Update a variable in the scope where it's defined.
+        
+        Returns True if the variable was found and updated, False otherwise.
+        """
+        if name in self.variables:
+            self.variables[name] = value
+            return True
+        if self.parent:
+            return self.parent.update_in_scope(name, value)
+        return False
 
 
 class Environment:
@@ -241,7 +253,14 @@ class Environment:
                 hint="Fixed variables cannot be reassigned after their initial value is set."
             )
         
-        self.current_scope.set(name, value, is_fixed)
+        # If this is a declaration, always set in current scope
+        if is_declaration:
+            self.current_scope.set(name, value, is_fixed)
+        else:
+            # Try to update in existing scope first (handles outer scope variables)
+            if not self.current_scope.update_in_scope(name, value):
+                # Variable doesn't exist in any scope, create it in current scope
+                self.current_scope.set(name, value, is_fixed)
     
     def declare_variable(
         self,

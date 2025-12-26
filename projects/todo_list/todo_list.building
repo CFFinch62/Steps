@@ -13,7 +13,7 @@ building: todo_list
     call load_todos with filename storing result in todos
     
     if length of todos is greater than 0
-        display "Loaded " added to (length of todos as text) added to " existing todo(s)."
+        display "Loaded " added to (length of todos) as text added to " existing todo(s)."
     otherwise
         display "Starting with a fresh list."
     

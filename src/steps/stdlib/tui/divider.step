@@ -1,0 +1,30 @@
+step: divider
+    belongs to: tui
+    expects: label as text, width as number
+    returns: nothing
+
+    note: Display a divider line with an optional centered label
+    note: Example: call divider with "Section", 40
+    note: Output: ────────── Section ──────────
+
+    declare:
+        left_dashes as number
+        right_dashes as number
+        left_line as text
+        right_line as text
+        output as text
+
+    do:
+        if label is equal to ""
+            call line with width, "single" storing result in output
+            display output
+        otherwise
+            note: Calculate padding on each side
+            set left_dashes to (width - length of label - 2) / 2
+            set right_dashes to width - length of label - 2 - left_dashes
+            
+            call repeat_text with "─", left_dashes storing result in left_line
+            call repeat_text with "─", right_dashes storing result in right_line
+            
+            set output to left_line added to " " added to label added to " " added to right_line
+            display output

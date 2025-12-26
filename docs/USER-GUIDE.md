@@ -732,6 +732,59 @@ if unsuccessful:
 
 ---
 
+## Console Graphics (TUI)
+
+Steps includes built-in functions for creating attractive console interfaces.
+
+### Drawing Boxes and Banners
+
+```steps
+note: Create a decorative banner
+call banner with "My Application", 40 storing result in b
+display b
+
+note: Draw a box around text
+call box with "Welcome!", 30 storing result in bx
+display bx
+```
+
+Output:
+```
+╔══════════════════════════════════════╗
+║           My Application             ║
+╚══════════════════════════════════════╝
+
+┌────────────────────────────┐
+│          Welcome!          │
+└────────────────────────────┘
+```
+
+### Progress Bars
+
+```steps
+call progress_bar with 7, 10, 20 storing result in pb
+display "Loading: " added to pb
+```
+
+Output: `Loading: [██████████████░░░░░░] 70%`
+
+### Menus
+
+```steps
+call menu with ["Add Contact", "Search", "Exit"]
+```
+
+Output:
+```
+  1. Add Contact
+  2. Search
+  3. Exit
+```
+
+See [STDLIB.md](STDLIB.md#tui-floor-text-user-interface) for the complete list of TUI functions.
+
+---
+
 ## Next Steps
 
 1. **Practice with the REPL**: Try out language features interactively

@@ -151,7 +151,90 @@ set row["age"] to "30"
 
 
 
-## Overriding Stdlib
+## TUI Floor (Text User Interface)
+
+Create attractive console interfaces with boxes, banners, menus, and more.
+
+### Native TUI Functions
+
+Core drawing primitives implemented in Python:
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `box` | `content, width` | `text` | Draw single-line box around text |
+| `line` | `width, style` | `text` | Horizontal line (styles: "single", "double", "dashed", "thick") |
+| `banner` | `title, width` | `text` | Decorative title banner (double-line box) |
+| `center_text` | `text, width` | `text` | Center-pad text to width |
+| `pad_text` | `text, width, align` | `text` | Pad text ("left", "right", "center") |
+| `progress_bar` | `current, total, width` | `text` | Text progress bar |
+
+### Examples
+
+```steps
+note: Draw a banner
+call banner with "My App", 40 storing result in b
+display b
+
+note: Draw a box
+call box with "Welcome!", 30 storing result in bx
+display bx
+
+note: Draw a line
+call line with 40, "double" storing result in ln
+display ln
+
+note: Show progress
+call progress_bar with 7, 10, 20 storing result in pb
+display pb
+```
+
+Output:
+```
+╔══════════════════════════════════════╗
+║                My App                ║
+╚══════════════════════════════════════╝
+
+┌────────────────────────────┐
+│         Welcome!           │
+└────────────────────────────┘
+
+════════════════════════════════════════
+
+[██████████████░░░░░░] 70%
+```
+
+---
+
+### Stdlib TUI Functions
+
+Higher-level helpers written in Steps (extendable):
+
+| Step | Parameters | Description |
+|------|------------|-------------|
+| `menu` | `options as list` | Display numbered menu |
+| `table_display` | `rows as list, columns as list` | Display aligned columns |
+| `divider` | `label as text, width as number` | Labeled divider line |
+
+### Examples
+
+```steps
+note: Display a menu
+call menu with ["Add Contact", "Search", "Exit"]
+
+note: Display a table
+set cols to ["name", "age"]
+set data to []
+add ["name": "Alice", "age": "30"] to data
+add ["name": "Bob", "age": "25"] to data
+call table_display with data, cols
+
+note: Display a divider
+call divider with "Options", 40
+```
+
+---
+
+
 
 Project floors can override stdlib definitions. If your project has a floor with the same name as a stdlib floor, your project's definitions take precedence.
 
@@ -190,11 +273,17 @@ stdlib/
 │   ├── max.step
 │   ├── min.step
 │   └── round.step
-└── strings/
-    ├── strings.floor
-    ├── reverse.step
-    └── repeat_text.step
+├── strings/
+│   ├── strings.floor
+│   ├── reverse.step
+│   └── repeat_text.step
+└── tui/
+    ├── tui.floor
+    ├── menu.step
+    ├── table_display.step
+    └── divider.step
 ```
 
 > [!NOTE]
-> Native string functions (`lowercase`, `uppercase`, `trim`, `slice`, etc.) are implemented in Python in `builtins/text.py`, not as stdlib .step files.
+> Native functions (string operations like `lowercase`, `trim`, `slice` and TUI primitives like `box`, `banner`, `line`) are implemented in Python in `builtins/`, not as stdlib .step files.
+

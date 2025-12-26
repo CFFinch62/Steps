@@ -266,6 +266,7 @@ Steps/
 3. **Conscious Engagement** - English-readable syntax requires understanding
 4. **Clear Data Flow** - Explicit `expects`/`returns` declarations
 5. **Educational Error Messages** - Errors teach, not frustrate
+6. **Attractive Console Output** - Built-in TUI functions for boxes, banners, and menus
 
 ---
 

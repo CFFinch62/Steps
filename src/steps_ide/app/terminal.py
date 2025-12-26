@@ -24,6 +24,7 @@ from PyQt6.QtCore import (
     Qt, QThread, pyqtSignal, QUrl, pyqtSlot, QObject, QTimer
 )
 from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebEngineCore import QWebEngineSettings
 from PyQt6.QtWebChannel import QWebChannel
 
 from steps_ide.app.settings import SettingsManager
@@ -576,6 +577,11 @@ class XtermWidget(QWidget):
         # WebView for xterm.js
         self.webview = QWebEngineView()
         self.webview.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        
+        # Enable clipboard access for copy/paste functionality
+        settings = self.webview.settings()
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanPaste, True)
         
         self.channel = QWebChannel()
         self.channel.registerObject("bridge", self.bridge)

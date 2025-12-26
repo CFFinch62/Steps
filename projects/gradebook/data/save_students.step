@@ -6,4 +6,4 @@ step: save_students
 
     do:
         call write_csv with filename, students
-        display "Saved " added to (length of students as text) added to " student(s) to " added to filename
+        display "Saved " added to (length of students) as text added to " student(s) to " added to filename

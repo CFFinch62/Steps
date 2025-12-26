@@ -13,7 +13,7 @@ building: gradebook
     call load_students with filename storing result in students
     
     if length of students is greater than 0
-        display "Loaded " added to (length of students as text) added to " student(s)."
+        display "Loaded " added to (length of students) as text added to " student(s)."
     otherwise
         display "Starting with a fresh gradebook."
     

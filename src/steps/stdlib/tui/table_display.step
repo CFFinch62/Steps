@@ -1,0 +1,49 @@
+step: table_display
+    belongs to: tui
+    expects: rows as list, columns as list
+    returns: nothing
+
+    note: Display a list of tables as aligned columns
+    note: columns = list of column names (keys in each row table)
+    note: rows = list of tables, each table has keys matching columns
+    note: Example:
+    note:   set cols to ["name", "age"]
+    note:   set data to []
+    note:   add ["name": "Alice", "age": "30"] to data
+    note:   add ["name": "Bob", "age": "25"] to data
+    note:   call table_display with data, cols
+
+    declare:
+        row as table
+        col as text
+        value as text
+        output_line as text
+        header_line as text
+        separator as text
+        col_width as number
+        padded as text
+
+    do:
+        note: Use fixed column width for simplicity
+        set col_width to 15
+        
+        note: Build header
+        set header_line to ""
+        repeat for each col in columns
+            call pad_text with col, col_width, "left" storing result in padded
+            set header_line to header_line added to padded
+        display header_line
+        
+        note: Build separator
+        set separator to ""
+        call repeat_text with "-", col_width * length of columns storing result in separator
+        display separator
+        
+        note: Display each row
+        repeat for each row in rows
+            set output_line to ""
+            repeat for each col in columns
+                set value to row[col]
+                call pad_text with value, col_width, "left" storing result in padded
+                set output_line to output_line added to padded
+            display output_line

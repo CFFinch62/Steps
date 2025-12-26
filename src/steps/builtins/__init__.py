@@ -95,6 +95,16 @@ from .io import (
     write_csv,
 )
 
+# TUI operations
+from .tui import (
+    tui_box,
+    tui_line,
+    tui_banner,
+    tui_center_text,
+    tui_pad_text,
+    tui_progress_bar,
+)
+
 # Native functions registry - callable from Steps code
 from .registry import NATIVE_FUNCTIONS
 
@@ -164,6 +174,14 @@ __all__ = [
     'file_exists',
     'read_csv',
     'write_csv',
+    # TUI
+    'tui_box',
+    'tui_line',
+    'tui_banner',
+    'tui_center_text',
+    'tui_pad_text',
+    'tui_progress_bar',
     # Registry
     'NATIVE_FUNCTIONS',
 ]
+
