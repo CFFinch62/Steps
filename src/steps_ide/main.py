@@ -17,6 +17,18 @@ from steps_ide.app.settings import SettingsManager
 
 def main():
     """Main entry point for the Steps IDE"""
+    
+    # Check if running in CLI mode (used for frozen execute to run internal steps interpreter)
+    if len(sys.argv) > 1 and sys.argv[1] == "--cli":
+        # Remove '--cli' so arguments align with what steps.main expects
+        del sys.argv[1]
+        try:
+            from steps.main import main as steps_main
+            sys.exit(steps_main())
+        except ImportError as e:
+            print(f"Error: Could not import steps interpreter: {e}")
+            sys.exit(1)
+            
     # Enable high DPI scaling
     app = QApplication(sys.argv)
     app.setApplicationName("Steps IDE")

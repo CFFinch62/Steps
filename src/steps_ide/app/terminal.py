@@ -686,12 +686,22 @@ class XtermWidget(QWidget):
         file_dir = os.path.dirname(filepath)
         self.set_working_directory(file_dir)
         
+        # Determine command prefix based on execution mode
+        if getattr(sys, 'frozen', False):
+            # Frozen application (PyInstaller) behavior
+            # We use the application executable itself with --cli flag
+            # This allows the packaged app to act as the interpreter
+            prefix = f'"{sys.executable}" --cli'
+        else:
+            # Development mode behavior
+            prefix = 'python -m steps'
+            
         if filepath.endswith('.step'):
-            command = f'python -m steps run-step "{filepath}"'
+            command = f'{prefix} run-step "{filepath}"'
         elif filepath.endswith('.building'):
-            command = f'python -m steps run "{file_dir}"'
+            command = f'{prefix} run "{file_dir}"'
         elif filepath.endswith('.floor'):
-            command = f'python -m steps run "{file_dir}"'
+            command = f'{prefix} run "{file_dir}"'
         else:
             return
         
