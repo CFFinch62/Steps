@@ -16,11 +16,11 @@ from PyQt6.QtWidgets import (
     QFileDialog, QInputDialog, QMessageBox, QDockWidget,
     QDialog, QFormLayout, QLineEdit, QComboBox, QSpinBox,
     QCheckBox, QPushButton, QDialogButtonBox, QTabWidget,
-    QApplication
+    QApplication, QTextBrowser
 )
 from PyQt6.QtCore import Qt, QSize, pyqtSignal, QTimer
 from PyQt6.QtGui import (
-    QAction, QKeySequence, QIcon, QCloseEvent, QFont
+    QAction, QKeySequence, QIcon, QCloseEvent, QFont, QFontDatabase
 )
 
 from steps_ide.app.settings import SettingsManager
@@ -45,6 +45,38 @@ class SettingsDialog(QDialog):
         
         self._setup_ui()
     
+    def _get_monospace_fonts(self):
+        """Get a list of available monospace fonts"""
+        monospace_fonts = []
+        
+        # Common monospace fonts to always check/include
+        common = ["Consolas", "Courier New", "Monaco", "Menlo", "Ubuntu Mono", "DejaVu Sans Mono", "Monospace", "Hack", "Fira Code", "JetBrains Mono"]
+        
+        try:
+            # QFontDatabase methods are static in PyQt6
+            families = QFontDatabase.families()
+            
+            for family in families:
+                is_fixed = False
+                try:
+                    is_fixed = QFontDatabase.isFixedPitch(family)
+                except:
+                    pass
+                    
+                if is_fixed or family in common or "Mono" in family or "Code" in family or "Term" in family:
+                    if family not in monospace_fonts:
+                        monospace_fonts.append(family)
+        except Exception:
+            # Fallback if QFontDatabase fails completely
+            pass
+            
+        # Ensure we have at least some defaults if detection failed or returned nothing
+        if not monospace_fonts:
+            monospace_fonts = ["Monospace", "Courier New"]
+            
+        monospace_fonts.sort()
+        return monospace_fonts
+
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         
@@ -55,7 +87,23 @@ class SettingsDialog(QDialog):
         editor_tab = QWidget()
         editor_layout = QFormLayout(editor_tab)
         
-        self.font_family = QLineEdit(self.settings.settings.editor.font_family)
+        # Get available fonts
+        fonts = self._get_monospace_fonts()
+        
+        self.font_family = QComboBox()
+        self.font_family.setEditable(False)  # Standard non-editable dropdown
+        self.font_family.addItems(fonts)
+        
+        # Set current font
+        current_font = self.settings.settings.editor.font_family
+        index = self.font_family.findText(current_font)
+        if index >= 0:
+            self.font_family.setCurrentIndex(index)
+        else:
+            # If current font not in detected list, add it and select it
+            self.font_family.addItem(current_font)
+            self.font_family.setCurrentIndex(self.font_family.count() - 1)
+            
         editor_layout.addRow("Font Family:", self.font_family)
         
         self.font_size = QSpinBox()
@@ -110,7 +158,18 @@ class SettingsDialog(QDialog):
         terminal_tab = QWidget()
         terminal_layout = QFormLayout(terminal_tab)
         
-        self.terminal_font = QLineEdit(self.settings.settings.terminal.font_family)
+        self.terminal_font = QComboBox()
+        self.terminal_font.setEditable(False)
+        self.terminal_font.addItems(fonts)
+        
+        current_term_font = self.settings.settings.terminal.font_family
+        term_index = self.terminal_font.findText(current_term_font)
+        if term_index >= 0:
+            self.terminal_font.setCurrentIndex(term_index)
+        else:
+            self.terminal_font.addItem(current_term_font)
+            self.terminal_font.setCurrentIndex(self.terminal_font.count() - 1)
+            
         terminal_layout.addRow("Font Family:", self.terminal_font)
         
         self.terminal_font_size = QSpinBox()
@@ -143,7 +202,7 @@ class SettingsDialog(QDialog):
     def _apply(self):
         """Apply settings without closing"""
         # Editor settings
-        self.settings.settings.editor.font_family = self.font_family.text()
+        self.settings.settings.editor.font_family = self.font_family.currentText()
         self.settings.settings.editor.font_size = self.font_size.value()
         self.settings.settings.editor.tab_width = self.tab_width.value()
         self.settings.settings.editor.use_spaces = self.use_spaces.isChecked()
@@ -158,7 +217,7 @@ class SettingsDialog(QDialog):
         self.theme_manager.set_theme(theme_name)
         
         # Terminal settings
-        self.settings.settings.terminal.font_family = self.terminal_font.text()
+        self.settings.settings.terminal.font_family = self.terminal_font.currentText()
         self.settings.settings.terminal.font_size = self.terminal_font_size.value()
         self.settings.settings.terminal.position = self.terminal_position.currentText().lower()
         
@@ -200,6 +259,116 @@ class GotoLineDialog(QDialog):
     
     def get_line(self) -> int:
         return self.line_input.value()
+
+
+class QuickReferenceDialog(QDialog):
+    """Dialog for displaying the language quick reference"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Steps Language Quick Reference")
+        self.resize(900, 700)
+        
+        layout = QVBoxLayout(self)
+        
+        # Text browser for markdown display
+        self.browser = QTextBrowser()
+        self.browser.setOpenExternalLinks(False)
+        
+        # Set monospace font for code blocks
+        font = QFont("Monospace", 10)
+        font.setStyleHint(QFont.StyleHint.TypeWriter)
+        self.browser.setFont(font)
+        
+        # Load the quick reference content
+        self._load_content()
+        
+        layout.addWidget(self.browser)
+        
+        # Close button
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.close)
+        layout.addWidget(buttons)
+    
+    def _load_content(self):
+        """Load the quick reference markdown file"""
+        try:
+            # Find the quick reference file
+            quick_ref_path = Path(__file__).parent.parent.parent.parent / "docs" / "QUICK-REFERENCE.md"
+            
+            if quick_ref_path.exists():
+                content = quick_ref_path.read_text(encoding='utf-8')
+                # Convert markdown to HTML for better rendering
+                html_content = self._markdown_to_html(content)
+                self.browser.setHtml(html_content)
+            else:
+                self.browser.setPlainText(f"Quick reference file not found at:\n{quick_ref_path}")
+        except Exception as e:
+            self.browser.setPlainText(f"Error loading quick reference: {e}")
+    
+    def _markdown_to_html(self, markdown_text: str) -> str:
+        """Convert markdown to basic HTML for display"""
+        html = ['<html><head><style>']
+        # Explicitly set text color to black and background to white to ensure contrast
+        # regardless of the system/app theme
+        html.append('body { font-family: sans-serif; margin: 20px; color: #333333; background-color: #ffffff; }')
+        html.append('h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }')
+        html.append('h2 { color: #34495e; margin-top: 30px; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; }')
+        html.append('h3 { color: #555; margin-top: 20px; }')
+        html.append('code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; }')
+        html.append('pre { background-color: #f8f8f8; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; overflow-x: auto; }')
+        html.append('pre code { background-color: transparent; padding: 0; }')
+        html.append('ul, ol { line-height: 1.6; }')
+        html.append('</style></head><body>')
+        
+        lines = markdown_text.split('\n')
+        in_code_block = False
+        code_block_lines = []
+        
+        for line in lines:
+            # Handle code blocks
+            if line.startswith('```'):
+                if in_code_block:
+                    # End code block
+                    html.append('<pre><code>')
+                    html.append('\n'.join(code_block_lines))
+                    html.append('</code></pre>')
+                    code_block_lines = []
+                    in_code_block = False
+                else:
+                    # Start code block
+                    in_code_block = True
+                continue
+            
+            if in_code_block:
+                code_block_lines.append(line.replace('<', '&lt;').replace('>', '&gt;'))
+                continue
+            
+            # Handle headings
+            if line.startswith('# '):
+                html.append(f'<h1>{line[2:]}</h1>')
+            elif line.startswith('## '):
+                html.append(f'<h2>{line[3:]}</h2>')
+            elif line.startswith('### '):
+                html.append(f'<h3>{line[4:]}</h3>')
+            # Handle inline code
+            elif '`' in line:
+                # Simple inline code replacement
+                parts = line.split('`')
+                result = []
+                for i, part in enumerate(parts):
+                    if i % 2 == 0:
+                        result.append(part)
+                    else:
+                        result.append(f'<code>{part}</code>')
+                html.append(''.join(result) + '<br/>')
+            elif line.strip():
+                html.append(line + '<br/>')
+            else:
+                html.append('<br/>')
+        
+        html.append('</body></html>')
+        return '\n'.join(html)
 
 
 class StepsIDEMainWindow(QMainWindow):
@@ -549,6 +718,12 @@ class StepsIDEMainWindow(QMainWindow):
         
         # Help menu
         help_menu = menubar.addMenu("&Help")
+        
+        quick_ref_action = help_menu.addAction("Language &Quick Reference")
+        quick_ref_action.setShortcut("F1")
+        quick_ref_action.triggered.connect(self._show_quick_reference)
+        
+        help_menu.addSeparator()
         
         about_action = help_menu.addAction("&About Steps IDE")
         about_action.triggered.connect(self._show_about)
@@ -1255,13 +1430,18 @@ class StepsIDEMainWindow(QMainWindow):
         self.cursor_label.setText(f"Ln {line}, Col {column}")
     
     # Help
+    def _show_quick_reference(self):
+        """Show the language quick reference dialog"""
+        dialog = QuickReferenceDialog(self)
+        dialog.exec()
+    
     def _show_about(self):
         QMessageBox.about(
             self, "About Steps IDE",
             "<h2>Steps IDE</h2>"
             "<p>Version 1.0.0</p>"
             "<p>A modern IDE for the Steps programming language.</p>"
-            "<p>Built with Python and PyQt6</p>"
+            "<p>(c) 2026 Chuck Finch - Fragillidae Software</p>"
         )
     
     # Window events
