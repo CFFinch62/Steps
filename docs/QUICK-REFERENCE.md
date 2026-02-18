@@ -104,15 +104,11 @@ set words to "a,b,c" split by ","
 
 ### Building (Entry Point)
 ```steps
-building: my_project
-    note: Project description
-    
-    declare:
-        global_var as number
-    
-    do:
-        call my_step
-        exit
+building: project_name
+    note: Optional description
+
+    statements
+    exit
 ```
 
 ### Floor Definition

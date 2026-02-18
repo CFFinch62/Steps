@@ -17,6 +17,8 @@ call reverse with "hello" storing result in r
 
 ## Math Floor
 
+### Basic Math (stdlib steps)
+
 | Function | Parameters | Returns | Description |
 |----------|------------|---------|-------------|
 | `abs` | `n as number` | `number` | Absolute value |
@@ -24,13 +26,79 @@ call reverse with "hello" storing result in r
 | `min` | `a as number, b as number` | `number` | Smaller of two numbers |
 | `round` | `n as number` | `number` | Round to nearest integer |
 
-### Examples
-
 ```steps
 call abs with -5 storing result in x        # 5
 call max with 3, 7 storing result in y      # 7
 call min with 3, 7 storing result in z      # 3
 call round with 3.7 storing result in r     # 4
+```
+
+### Math Operators
+
+| Operator | Keyword form | Example | Description |
+|----------|--------------|---------|-------------|
+| `%` | `modulo` | `10 % 3` → `1` | Remainder after division |
+
+```steps
+set remainder to 17 % 5     # 2
+set remainder to 17 modulo 5  # same thing
+```
+
+### Power and Root (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `sqr` | `n` | `number` | Square (n²) |
+| `sqrt` | `n` | `number` | Square root |
+| `pow` | `base, exp` | `number` | base raised to exp |
+| `pi` | *(none)* | `number` | π ≈ 3.14159… |
+
+```steps
+call sqr with 5 storing result in x         # 25
+call sqrt with 16 storing result in y       # 4
+call pow with 2, 10 storing result in z     # 1024
+call pi storing result in p                 # 3.141592653589793
+```
+
+### Trigonometry (Native)
+
+All trig functions use **radians**. Use `degrees` / `radians` to convert.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `sin` | `n` | `number` | Sine |
+| `cos` | `n` | `number` | Cosine |
+| `tan` | `n` | `number` | Tangent |
+| `asin` | `n` | `number` | Arcsine (input: -1 to 1) |
+| `acos` | `n` | `number` | Arccosine (input: -1 to 1) |
+| `atan` | `n` | `number` | Arctangent |
+| `atan2` | `y, x` | `number` | Two-argument arctangent |
+| `degrees` | `n` | `number` | Radians → degrees |
+| `radians` | `n` | `number` | Degrees → radians |
+
+```steps
+call pi storing result in p
+call sin with p / 2 storing result in s     # 1.0
+call cos with 0 storing result in c         # 1.0
+call degrees with p storing result in d     # 180.0
+call radians with 90 storing result in r    # 1.5707963...
+call atan2 with 1, 1 storing result in a    # 0.7853981... (45° in radians)
+```
+
+### Logarithms and Exponentials (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `log` | `n` | `number` | Natural logarithm (base e) |
+| `log10` | `n` | `number` | Base-10 logarithm |
+| `log2` | `n` | `number` | Base-2 logarithm |
+| `exp` | `n` | `number` | e raised to n |
+
+```steps
+call log with 2.71828 storing result in x   # ≈ 1.0
+call log10 with 100 storing result in y     # 2.0
+call log2 with 8 storing result in z        # 3.0
+call exp with 1 storing result in e         # 2.71828...
 ```
 
 ---
@@ -79,6 +147,61 @@ note: Iterate over a string character by character
 call characters with "hello" storing result in chars
 repeat for each char in chars
     display char
+```
+
+---
+
+## List Math (Native)
+
+Aggregate functions that work on a **list of numbers**.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `list_min` | `lst` | `number` | Smallest number in the list |
+| `list_max` | `lst` | `number` | Largest number in the list |
+| `list_sum` | `lst` | `number` | Sum of all numbers in the list |
+
+```steps
+set scores to [85, 92, 78, 95, 60]
+call list_min with scores storing result in low    # 60
+call list_max with scores storing result in high   # 95
+call list_sum with scores storing result in total  # 410
+```
+
+---
+
+## Date & Time Floor (Native)
+
+These functions are *native* - implemented in Python, not Steps code.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `time` | *(none)* | `number` | Current Unix timestamp (seconds since epoch, float precision) |
+| `date` | *(none)* | `text` | Today's date as `"YYYY-MM-DD"` |
+| `date_diff` | `date1 as text, date2 as text` | `number` | Days between two ISO dates (`date2 − date1`) |
+
+### Examples
+
+```steps
+note: performance timing
+call time storing result in start
+repeat 10000 times
+    set x to 1 + 1
+call time storing result in finish
+set elapsed to finish - start
+display "Elapsed seconds: " added to elapsed as text
+
+note: today's date
+call date storing result in today
+display today                                         # e.g. "2026-02-18"
+
+note: days between two dates
+call date_diff with "2026-01-01", "2026-12-31" storing result in days
+display days                                          # 364
+
+note: negative when first date is later
+call date_diff with "2026-12-31", "2026-01-01" storing result in days
+display days                                          # -364
 ```
 
 ---

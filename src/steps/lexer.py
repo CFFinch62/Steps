@@ -109,7 +109,7 @@ class TokenType(Enum):
     MINUS = auto()             # "-"
     MULTIPLY = auto()          # "*"
     DIVIDE = auto()            # "/"
-    MODULO = auto()            # "modulo"
+    MODULO = auto()            # "modulo" or "%"
     
     # Punctuation
     COLON = auto()             # ":"
@@ -420,7 +420,7 @@ class Lexer:
                 continue
             
             # Operators and punctuation
-            if self.current_char in '+-*/':
+            if self.current_char in '+-*/%':
                 self.tokens.append(self._read_operator())
                 continue
             
@@ -682,7 +682,9 @@ class Lexer:
             return Token(TokenType.MULTIPLY, '*', self.line, start_col, self.file)
         elif char == '/':
             return Token(TokenType.DIVIDE, '/', self.line, start_col, self.file)
-        
+        elif char == '%':
+            return Token(TokenType.MODULO, '%', self.line, start_col, self.file)
+
         # Should not reach here
         raise self.error(f"Unknown operator: {char}")
     

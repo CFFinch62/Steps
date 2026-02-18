@@ -14,6 +14,15 @@ from .tui import (
     tui_box, tui_line, tui_banner, tui_center_text,
     tui_pad_text, tui_progress_bar
 )
+from .list_math import list_min, list_max, list_sum
+from .datetime_functions import time_now, date_today, date_diff
+from .math_functions import (
+    math_square, math_sqrt, math_pow, math_pi,
+    math_sin, math_cos, math_tan,
+    math_asin, math_acos, math_atan, math_atan2,
+    math_degrees, math_radians,
+    math_log, math_log10, math_log2, math_exp,
+)
 
 NATIVE_FUNCTIONS = {
     # Random functions
@@ -104,6 +113,103 @@ NATIVE_FUNCTIONS = {
     "progress_bar": {
         "function": tui_progress_bar,
         "params": ["current", "total", "width"],
+    },
+    # List aggregate functions
+    "list_min": {
+        "function": list_min,
+        "params": ["lst"],
+    },
+    "list_max": {
+        "function": list_max,
+        "params": ["lst"],
+    },
+    "list_sum": {
+        "function": list_sum,
+        "params": ["lst"],
+    },
+    # Math: power / root
+    "sqr": {
+        "function": math_square,
+        "params": ["n"],
+    },
+    "sqrt": {
+        "function": math_sqrt,
+        "params": ["n"],
+    },
+    "pow": {
+        "function": math_pow,
+        "params": ["base", "exp"],
+    },
+    "pi": {
+        "function": math_pi,
+        "params": [],
+    },
+    # Math: trigonometry
+    "sin": {
+        "function": math_sin,
+        "params": ["n"],
+    },
+    "cos": {
+        "function": math_cos,
+        "params": ["n"],
+    },
+    "tan": {
+        "function": math_tan,
+        "params": ["n"],
+    },
+    "asin": {
+        "function": math_asin,
+        "params": ["n"],
+    },
+    "acos": {
+        "function": math_acos,
+        "params": ["n"],
+    },
+    "atan": {
+        "function": math_atan,
+        "params": ["n"],
+    },
+    "atan2": {
+        "function": math_atan2,
+        "params": ["y", "x"],
+    },
+    "degrees": {
+        "function": math_degrees,
+        "params": ["n"],
+    },
+    "radians": {
+        "function": math_radians,
+        "params": ["n"],
+    },
+    # Math: logarithms and exponentials
+    "log": {
+        "function": math_log,
+        "params": ["n"],
+    },
+    "log10": {
+        "function": math_log10,
+        "params": ["n"],
+    },
+    "log2": {
+        "function": math_log2,
+        "params": ["n"],
+    },
+    "exp": {
+        "function": math_exp,
+        "params": ["n"],
+    },
+    # Date and time functions
+    "time": {
+        "function": time_now,
+        "params": [],
+    },
+    "date": {
+        "function": date_today,
+        "params": [],
+    },
+    "date_diff": {
+        "function": date_diff,
+        "params": ["date1", "date2"],
     },
 }
 

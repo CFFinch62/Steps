@@ -216,8 +216,8 @@ project_name/                    # Project folder
 1. Interpreter loads the `.building` file
 2. Floors are discovered from subdirectories
 3. Steps are loaded as needed (lazy loading)
-4. Execution begins at the building's `do:` section
-5. Program ends at `exit` or natural completion
+4. Execution begins at the building body
+5. Program ends at `exit` (optional) or natural completion
 
 ---
 
@@ -275,6 +275,7 @@ declare:
 | `-` | Subtraction | `5 - 3` → `2` |
 | `*` | Multiplication | `5 * 3` → `15` |
 | `/` | Division | `15 / 3` → `5` |
+| `%` or `modulo` | Remainder (modulo) | `10 % 3` → `1` |
 | `-` (unary) | Negation | `-5` |
 
 ### 5.2 Comparison Operators
@@ -331,7 +332,7 @@ From highest to lowest:
 
 1. Parentheses `()`
 2. Unary operators: `not`, `-`
-3. Multiplication/Division: `*`, `/`
+3. Multiplication/Division/Modulo: `*`, `/`, `%`
 4. Addition/Subtraction: `+`, `-`
 5. Comparison: `is equal to`, `is less than`, etc.
 6. Logical AND: `and`
@@ -625,13 +626,12 @@ floor: floor_name
 building: project_name
     note: Optional description
 
-    declare:
-        variables as type
-
-    do:
-        statements
-        exit
+    statements
+    exit
 ```
+
+> **Note:** Buildings do **not** use `declare:` or `do:` sections — those belong to steps and risers only.
+> Write statements directly inside the indented building body.
 
 ### 10.3 Building Sections
 
@@ -639,8 +639,8 @@ building: project_name
 |---------|----------|-------------|
 | `building:` | Yes | Program name (must match folder) |
 | `note:` | No | Description/comment |
-| `declare:` | No | Global variable declarations |
-| `do:` | Yes | Main program logic |
+| statements | Yes | Direct executable statements |
+| `exit` | No | Explicitly end execution (optional — program also ends naturally) |
 
 ---
 
@@ -922,7 +922,7 @@ my_project/
 ### Program Structure
 ```
 program     → building
-building    → "building:" IDENTIFIER sections
+building    → "building:" IDENTIFIER note? statement*
 floor       → "floor:" IDENTIFIER step_list
 step        → "step:" IDENTIFIER step_sections
 riser       → "riser:" IDENTIFIER riser_sections
@@ -930,8 +930,7 @@ riser       → "riser:" IDENTIFIER riser_sections
 
 ### Sections
 ```
-sections      → note? declare? do
-step_sections → belongs expects? returns? riser* declare? do
+step_sections  → belongs expects? returns? riser* declare? do
 riser_sections → expects? returns? declare? do
 ```
 
@@ -1005,31 +1004,24 @@ Here is a complete, working Steps program:
 building: tip_calculator
     note: Calculate tip and total for a restaurant bill
 
-    declare:
-        bill_amount as number
-        tip_percent as number
-        tip_amount as number
-        total as number
+    display "Welcome to Tip Calculator!"
+    display ""
 
-    do:
-        display "Welcome to Tip Calculator!"
-        display ""
+    display "Enter bill amount: $"
+    set bill_amount to input as number
 
-        display "Enter bill amount: $"
-        set bill_amount to input as number
+    display "Enter tip percentage (e.g., 15, 18, 20): "
+    set tip_percent to input as number
 
-        display "Enter tip percentage (e.g., 15, 18, 20): "
-        set tip_percent to input as number
+    call calculate_tip with bill_amount, tip_percent storing result in tip_amount
+    set total to bill_amount + tip_amount
 
-        call calculate_tip with bill_amount, tip_percent storing result in tip_amount
-        set total to bill_amount + tip_amount
+    display ""
+    display "Bill:  $" added to (bill_amount as text)
+    display "Tip:   $" added to (tip_amount as text)
+    display "Total: $" added to (total as text)
 
-        display ""
-        display "Bill:  $" added to (bill_amount as text)
-        display "Tip:   $" added to (tip_amount as text)
-        display "Total: $" added to (total as text)
-
-        exit
+    exit
 ```
 
 **tip_calculator/math/math.floor:**
@@ -1086,7 +1078,7 @@ step: round_to_cents
 
 Steps includes a bundled standard library that's automatically available to all buildings.
 
-### Math Functions
+### Basic Math
 
 | Function | Parameters | Returns | Description |
 |----------|------------|---------|-------------|
@@ -1094,6 +1086,52 @@ Steps includes a bundled standard library that's automatically available to all 
 | `max` | `a, b as number` | `number` | Larger of two |
 | `min` | `a, b as number` | `number` | Smaller of two |
 | `round` | `n as number` | `number` | Round to nearest |
+
+### Math Operators
+
+| Operator | Keyword | Description |
+|----------|---------|-------------|
+| `%` | `modulo` | Remainder after division |
+
+### List Math (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `list_min` | `lst` | `number` | Smallest in numeric list |
+| `list_max` | `lst` | `number` | Largest in numeric list |
+| `list_sum` | `lst` | `number` | Sum of numeric list |
+
+### Power and Root (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `sqr` | `n` | `number` | n² |
+| `sqrt` | `n` | `number` | Square root |
+| `pow` | `base, exp` | `number` | base^exp |
+| `pi` | *(none)* | `number` | π constant |
+
+### Trigonometry (Native, radians)
+
+| Function | Parameters | Returns |
+|----------|------------|---------|
+| `sin` | `n` | `number` |
+| `cos` | `n` | `number` |
+| `tan` | `n` | `number` |
+| `asin` | `n` | `number` |
+| `acos` | `n` | `number` |
+| `atan` | `n` | `number` |
+| `atan2` | `y, x` | `number` |
+| `degrees` | `n` | `number` |
+| `radians` | `n` | `number` |
+
+### Logarithms and Exponentials (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `log` | `n` | `number` | Natural log (ln) |
+| `log10` | `n` | `number` | Base-10 log |
+| `log2` | `n` | `number` | Base-2 log |
+| `exp` | `n` | `number` | e^n |
 
 ### Strings Functions
 
@@ -1105,6 +1143,14 @@ Steps includes a bundled standard library that's automatically available to all 
 | `reverse` | `s as text` | `text` | Reverse text |
 | `repeat_text` | `s, count` | `text` | Repeat N times |
 
+### Date & Time Functions (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `time` | *(none)* | `number` | Unix timestamp (float seconds since epoch) |
+| `date` | *(none)* | `text` | Today's date as `"YYYY-MM-DD"` |
+| `date_diff` | `date1, date2` | `number` | Days between two ISO dates (`date2 − date1`) |
+
 ### Random Functions (Native)
 
 | Function | Parameters | Returns | Description |
@@ -1115,8 +1161,12 @@ Steps includes a bundled standard library that's automatically available to all 
 ### Example
 
 ```steps
-call abs with -5 storing result in x      # 5
-call random_int with 1, 100 storing result in r   # random
+call abs with -5 storing result in x               # 5
+call sqr with 4 storing result in s                # 16
+call sqrt with 25 storing result in r              # 5
+call list_sum with [1, 2, 3, 4] storing result in t  # 10
+set remainder to 17 % 5                            # 2
+call random_int with 1, 100 storing result in rnd  # random
 ```
 
 > **See also:** [STDLIB.md](STDLIB.md) for complete documentation.

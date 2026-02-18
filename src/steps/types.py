@@ -115,9 +115,14 @@ class StepsNumber(StepsValue):
             return StepsNumber(self.value / other.value)
         return NotImplemented
     
+    def __mod__(self, other: "StepsNumber") -> "StepsNumber":
+        if isinstance(other, StepsNumber):
+            return StepsNumber(self.value % other.value)
+        return NotImplemented
+
     def __neg__(self) -> "StepsNumber":
         return StepsNumber(-self.value)
-    
+
     # Comparison operations
     def __lt__(self, other: "StepsNumber") -> bool:
         if isinstance(other, StepsNumber):

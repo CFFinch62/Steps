@@ -215,8 +215,8 @@ project_name/                    # Project folder
 1. Interpreter loads the `.building` file
 2. Floors are discovered from subdirectories
 3. Steps are loaded as needed (lazy loading)
-4. Execution begins at the building's `do:` section
-5. Program ends at `exit` or natural completion
+4. Execution begins at the building body
+5. Program ends at `exit` (optional) or natural completion
 
 ---
 
@@ -274,6 +274,7 @@ declare:
 | `-` | Subtraction | `5 - 3` → `2` |
 | `*` | Multiplication | `5 * 3` → `15` |
 | `/` | Division | `15 / 3` → `5` |
+| `%` or `modulo` | Remainder (modulo) | `10 % 3` → `1` |
 | `-` (unary) | Negation | `-5` |
 
 ### 5.2 Comparison Operators
@@ -330,7 +331,7 @@ From highest to lowest:
 
 1. Parentheses `()`
 2. Unary operators: `not`, `-`
-3. Multiplication/Division: `*`, `/`
+3. Multiplication/Division/Modulo: `*`, `/`, `%`
 4. Addition/Subtraction: `+`, `-`
 5. Comparison: `is equal to`, `is less than`, etc.
 6. Logical AND: `and`
@@ -611,13 +612,12 @@ floor: floor_name
 building: project_name
     note: Optional description
 
-    declare:
-        variables as type
-
-    do:
-        statements
-        exit
+    statements
+    exit
 ```
+
+> **Note:** Buildings do **not** use `declare:` or `do:` sections — those belong to steps and risers only.
+> Write statements directly inside the indented building body.
 
 ### 10.3 Building Sections
 
@@ -625,8 +625,8 @@ building: project_name
 |---------|----------|-------------|
 | `building:` | Yes | Program name (must match folder) |
 | `note:` | No | Description/comment |
-| `declare:` | No | Global variable declarations |
-| `do:` | Yes | Main program logic |
+| statements | Yes | Direct executable statements |
+| `exit` | No | Explicitly end execution (optional — program also ends naturally) |
 
 ---
 
@@ -899,12 +899,42 @@ my_project/
 
 ---
 
+## 16. Standard Library (Selected)
+
+### Date & Time Functions (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `time` | *(none)* | `number` | Unix timestamp (float seconds since epoch) |
+| `date` | *(none)* | `text` | Today's date as `"YYYY-MM-DD"` |
+| `date_diff` | `date1, date2` | `number` | Days between two ISO dates (`date2 − date1`) |
+
+```steps
+note: performance timing
+call time storing result in start
+repeat 10000 times
+    set x to 1 + 1
+call time storing result in finish
+set elapsed to finish - start
+display "Elapsed seconds: " added to elapsed as text
+
+note: today's date and date math
+call date storing result in today
+display today                                         # e.g. "2026-02-18"
+call date_diff with "2026-01-01", "2026-12-31" storing result in days
+display days                                          # 364
+```
+
+> **See also:** [STDLIB.md](STDLIB.md) for complete standard library documentation.
+
+---
+
 ## Appendix A: Grammar Summary
 
 ### Program Structure
 ```
 program     → building
-building    → "building:" IDENTIFIER sections
+building    → "building:" IDENTIFIER note? statement*
 floor       → "floor:" IDENTIFIER step_list
 step        → "step:" IDENTIFIER step_sections
 riser       → "riser:" IDENTIFIER riser_sections
@@ -912,8 +942,7 @@ riser       → "riser:" IDENTIFIER riser_sections
 
 ### Sections
 ```
-sections      → note? declare? do
-step_sections → belongs expects? returns? riser* declare? do
+step_sections  → belongs expects? returns? riser* declare? do
 riser_sections → expects? returns? declare? do
 ```
 
@@ -987,31 +1016,24 @@ Here is a complete, working Steps program:
 building: tip_calculator
     note: Calculate tip and total for a restaurant bill
 
-    declare:
-        bill_amount as number
-        tip_percent as number
-        tip_amount as number
-        total as number
+    display "Welcome to Tip Calculator!"
+    display ""
 
-    do:
-        display "Welcome to Tip Calculator!"
-        display ""
+    display "Enter bill amount: $"
+    set bill_amount to input as number
 
-        display "Enter bill amount: $"
-        set bill_amount to input as number
+    display "Enter tip percentage (e.g., 15, 18, 20): "
+    set tip_percent to input as number
 
-        display "Enter tip percentage (e.g., 15, 18, 20): "
-        set tip_percent to input as number
+    call calculate_tip with bill_amount, tip_percent storing result in tip_amount
+    set total to bill_amount + tip_amount
 
-        call calculate_tip with bill_amount, tip_percent storing result in tip_amount
-        set total to bill_amount + tip_amount
+    display ""
+    display "Bill:  $" added to (bill_amount as text)
+    display "Tip:   $" added to (tip_amount as text)
+    display "Total: $" added to (total as text)
 
-        display ""
-        display "Bill:  $" added to (bill_amount as text)
-        display "Tip:   $" added to (tip_amount as text)
-        display "Total: $" added to (total as text)
-
-        exit
+    exit
 ```
 
 **tip_calculator/math/math.floor:**

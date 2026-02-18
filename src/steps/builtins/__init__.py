@@ -85,6 +85,41 @@ from .random import (
     random_choice,
 )
 
+# List aggregate math operations
+from .list_math import (
+    list_min,
+    list_max,
+    list_sum,
+)
+
+# Advanced math functions (roots, trig, log)
+from .math_functions import (
+    math_square,
+    math_sqrt,
+    math_pow,
+    math_pi,
+    math_sin,
+    math_cos,
+    math_tan,
+    math_asin,
+    math_acos,
+    math_atan,
+    math_atan2,
+    math_degrees,
+    math_radians,
+    math_log,
+    math_log10,
+    math_log2,
+    math_exp,
+)
+
+# Date and time functions
+from .datetime_functions import (
+    time_now,
+    date_today,
+    date_diff,
+)
+
 # File I/O operations
 from .io import (
     read_file,
@@ -167,6 +202,28 @@ __all__ = [
     # Random
     'random_int',
     'random_choice',
+    # List math
+    'list_min',
+    'list_max',
+    'list_sum',
+    # Math functions
+    'math_square',
+    'math_sqrt',
+    'math_pow',
+    'math_pi',
+    'math_sin',
+    'math_cos',
+    'math_tan',
+    'math_asin',
+    'math_acos',
+    'math_atan',
+    'math_atan2',
+    'math_degrees',
+    'math_radians',
+    'math_log',
+    'math_log10',
+    'math_log2',
+    'math_exp',
     # I/O
     'read_file',
     'write_file',
@@ -181,6 +238,10 @@ __all__ = [
     'tui_center_text',
     'tui_pad_text',
     'tui_progress_bar',
+    # Date and time functions
+    'time_now',
+    'date_today',
+    'date_diff',
     # Registry
     'NATIVE_FUNCTIONS',
 ]
