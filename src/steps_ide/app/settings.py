@@ -63,10 +63,11 @@ class WindowSettings:
     width: int = 1400
     height: int = 900
     maximized: bool = False
-    file_browser_width: int = 250
+    file_browser_width: int = 190
     file_browser_visible: bool = True
     terminal_height: int = 200
     terminal_width: int = 400
+    toolbar_visible: bool = True
 
 
 @dataclass

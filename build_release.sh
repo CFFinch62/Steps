@@ -25,6 +25,7 @@ pyinstaller --name="StepsIDE" \
             --noconsole \
             --clean \
             --noconfirm \
+            --add-data "src/steps/stdlib:steps/stdlib" \
             --add-data "docs/QUICK-REFERENCE.md:docs" \
             --hidden-import "PyQt6.QtWebEngineCore" \
             --hidden-import "PyQt6.QtWebEngineWidgets" \

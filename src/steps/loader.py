@@ -338,6 +338,7 @@ class Loader:
             parameters=[p.name for p in step_node.expects],
             returns=step_node.returns.name if step_node.returns else None,
             body=step_node.body,
+            declarations=step_node.declarations,  # Include declarations from the step
             risers=risers,
             file_path=step_file
         )

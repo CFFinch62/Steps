@@ -18,9 +18,9 @@ from PyQt6.QtWidgets import (
     QCheckBox, QPushButton, QDialogButtonBox, QTabWidget,
     QApplication, QTextBrowser
 )
-from PyQt6.QtCore import Qt, QSize, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import (
-    QAction, QKeySequence, QIcon, QCloseEvent, QFont, QFontDatabase
+    QAction, QKeySequence, QIcon, QCloseEvent, QFont, QFontDatabase, QTextCursor
 )
 
 from steps_ide.app.settings import SettingsManager
@@ -400,7 +400,7 @@ class StepsIDEMainWindow(QMainWindow):
         self.resize(ws.width, ws.height)
         if ws.maximized:
             self.showMaximized()
-    
+
     def _setup_ui(self):
         """Set up the main UI"""
         central = QWidget()
@@ -446,21 +446,31 @@ class StepsIDEMainWindow(QMainWindow):
         self.editor_terminal_splitter.setSizes([600, 200])
         
         self.main_splitter.addWidget(self.editor_terminal_splitter)
-        
-        # Set splitter sizes from settings
-        ws = self.settings.settings.window
-        self.main_splitter.setSizes([ws.file_browser_width, 1000])
-        
+
+        # File browser keeps its saved width when the window is resized or
+        # maximised; the editor panel absorbs all extra space.
+        self.main_splitter.setStretchFactor(0, 0)
+        self.main_splitter.setStretchFactor(1, 1)
+
         # Apply visibility settings
+        ws = self.settings.settings.window
         if not ws.file_browser_visible:
             self.file_browser.hide()
         if not self.settings.settings.terminal.visible:
             self.terminal_container.hide()
-        
+
         main_layout.addWidget(self.main_splitter)
-        
+
         # Handle terminal position (bottom vs right)
         self._update_terminal_position()
+
+        # Restore the saved file-browser width.  This is done AFTER
+        # _update_terminal_position() because that method re-parents the
+        # terminal container, which would otherwise cause Qt to recalculate
+        # and discard any sizes we set earlier.  The setStretchFactor(0, 0)
+        # call above ensures this width is preserved when the window is later
+        # resized or maximised.
+        self.main_splitter.setSizes([ws.file_browser_width, 1000])
         
         # Setup Debug Dock
         from steps_ide.app.debug_panel import DebugPanel
@@ -523,7 +533,10 @@ class StepsIDEMainWindow(QMainWindow):
         new_project_action = file_menu.addAction("New &Project...")
         new_project_action.setShortcut("Ctrl+Shift+N")
         new_project_action.triggered.connect(self._new_project)
-        
+
+        new_folder_action = file_menu.addAction("New Fo&lder in Browser...")
+        new_folder_action.triggered.connect(self._new_folder_in_browser)
+
         file_menu.addSeparator()
         
         open_action = file_menu.addAction("&Open...")
@@ -600,9 +613,19 @@ class StepsIDEMainWindow(QMainWindow):
         select_all_action = edit_menu.addAction("Select &All")
         select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
         select_all_action.triggered.connect(self._select_all)
-        
+
         edit_menu.addSeparator()
-        
+
+        indent_action = edit_menu.addAction("&Indent")
+        indent_action.setShortcut("Ctrl+]")
+        indent_action.triggered.connect(self._indent_selection)
+
+        dedent_action = edit_menu.addAction("&Dedent")
+        dedent_action.setShortcut("Ctrl+[")
+        dedent_action.triggered.connect(self._dedent_selection)
+
+        edit_menu.addSeparator()
+
         find_action = edit_menu.addAction("&Find...")
         find_action.setShortcut(QKeySequence.StandardKey.Find)
         find_action.triggered.connect(self._find)
@@ -623,7 +646,15 @@ class StepsIDEMainWindow(QMainWindow):
         
         # View menu
         view_menu = menubar.addMenu("&View")
-        
+
+        self.toggle_toolbar_action = view_menu.addAction("Toggle &Toolbar")
+        self.toggle_toolbar_action.setShortcut("Ctrl+Shift+B")
+        self.toggle_toolbar_action.setCheckable(True)
+        self.toggle_toolbar_action.setChecked(self.settings.settings.window.toolbar_visible)
+        self.toggle_toolbar_action.triggered.connect(self._toggle_toolbar)
+
+        view_menu.addSeparator()
+
         self.toggle_browser_action = view_menu.addAction("Toggle &File Browser")
         self.toggle_browser_action.setShortcut("Ctrl+B")
         self.toggle_browser_action.setCheckable(True)
@@ -730,60 +761,64 @@ class StepsIDEMainWindow(QMainWindow):
     
     def _setup_toolbar(self):
         """Set up the toolbar"""
-        toolbar = QToolBar("Main Toolbar")
-        toolbar.setMovable(False)
-        toolbar.setIconSize(QSize(20, 20))
-        self.addToolBar(toolbar)
-        
+        self.toolbar = QToolBar("Main Toolbar")
+        self.toolbar.setMovable(False)
+        self.toolbar.setIconSize(QSize(20, 20))
+        self.addToolBar(self.toolbar)
+
         # Set font with emoji support
         toolbar_font = QFont()
         toolbar_font.setFamilies(["Sans", "Noto Color Emoji", "Segoe UI Emoji", "Apple Color Emoji"])
-        toolbar.setFont(toolbar_font)
-        
+        self.toolbar.setFont(toolbar_font)
+
         # New file
-        new_btn = toolbar.addAction("📄 New")
+        new_btn = self.toolbar.addAction("📄 New")
         new_btn.setToolTip("New File (Ctrl+N)")
         new_btn.triggered.connect(self._new_file)
-        
+
         # Open file
-        open_btn = toolbar.addAction("📂 Open")
+        open_btn = self.toolbar.addAction("📂 Open")
         open_btn.setToolTip("Open File (Ctrl+O)")
         open_btn.triggered.connect(self._open_file)
-        
+
         # Save
-        save_btn = toolbar.addAction("💾 Save")
+        save_btn = self.toolbar.addAction("💾 Save")
         save_btn.setToolTip("Save (Ctrl+S)")
         save_btn.triggered.connect(self._save_file)
-        
-        toolbar.addSeparator()
-        
+
+        self.toolbar.addSeparator()
+
         # Run
-        run_btn = toolbar.addAction("▶️ Run")
+        run_btn = self.toolbar.addAction("▶️ Run")
         run_btn.setToolTip("Run Steps Project (Ctrl+F5)")
         run_btn.triggered.connect(self._run_current_project)
-        
-        toolbar.addSeparator()
-        
+
+        self.toolbar.addSeparator()
+
         # Toggle browser
-        browser_btn = toolbar.addAction("📁 Browser")
+        browser_btn = self.toolbar.addAction("📁 Browser")
         browser_btn.setToolTip("Toggle File Browser (Ctrl+B)")
         browser_btn.setCheckable(True)
         browser_btn.setChecked(self.settings.settings.window.file_browser_visible)
         browser_btn.triggered.connect(self._toggle_file_browser)
         self.browser_toolbar_btn = browser_btn
-        
+
         # Toggle terminal
-        terminal_btn = toolbar.addAction("💻 Terminal")
+        terminal_btn = self.toolbar.addAction("💻 Terminal")
         terminal_btn.setToolTip("Toggle Terminal (Ctrl+`)")
         terminal_btn.setCheckable(True)
         terminal_btn.setChecked(self.settings.settings.terminal.visible)
         terminal_btn.triggered.connect(self._toggle_terminal)
         self.terminal_toolbar_btn = terminal_btn
-        
+
         # External Terminal
-        ext_term_btn = toolbar.addAction("📟 Ext. Term")
+        ext_term_btn = self.toolbar.addAction("📟 Ext. Term")
         ext_term_btn.setToolTip("Open External Terminal (Ctrl+Shift+T)")
         ext_term_btn.triggered.connect(self._open_external_terminal)
+
+        # Apply saved visibility
+        if not self.settings.settings.window.toolbar_visible:
+            self.toolbar.hide()
     
     def _setup_statusbar(self):
         """Set up the status bar"""
@@ -846,6 +881,10 @@ class StepsIDEMainWindow(QMainWindow):
     # File operations
     def _new_file(self):
         self.editor_tabs.new_file()
+
+    def _new_folder_in_browser(self):
+        """Create a new folder in the file browser's current directory."""
+        self.file_browser._create_new_folder()
     
     def _new_project(self):
         """Create a new Steps project with skeleton structure."""
@@ -999,7 +1038,80 @@ class StepsIDEMainWindow(QMainWindow):
         editor = self.editor_tabs.get_current_editor()
         if editor:
             editor.selectAll()
-    
+
+    def _indent_selection(self):
+        """Add 4 spaces to the beginning of each selected line."""
+        editor = self.editor_tabs.get_current_editor()
+        if not editor:
+            return
+
+        cursor = editor.textCursor()
+        doc = editor.document()
+
+        if cursor.hasSelection():
+            start = cursor.selectionStart()
+            end = cursor.selectionEnd()
+            cursor.setPosition(start)
+            start_block = cursor.blockNumber()
+            cursor.setPosition(end)
+            end_block = cursor.blockNumber()
+            # If selection ends exactly at the start of a line, exclude that line
+            if cursor.positionInBlock() == 0 and end > start:
+                end_block -= 1
+        else:
+            start_block = cursor.blockNumber()
+            end_block = start_block
+
+        cursor.beginEditBlock()
+        for block_num in range(start_block, end_block + 1):
+            block = doc.findBlockByNumber(block_num)
+            cursor.setPosition(block.position())
+            cursor.insertText("    ")
+        cursor.endEditBlock()
+
+    def _dedent_selection(self):
+        """Remove up to 4 spaces from the beginning of each selected line."""
+        editor = self.editor_tabs.get_current_editor()
+        if not editor:
+            return
+
+        cursor = editor.textCursor()
+        doc = editor.document()
+
+        if cursor.hasSelection():
+            start = cursor.selectionStart()
+            end = cursor.selectionEnd()
+            cursor.setPosition(start)
+            start_block = cursor.blockNumber()
+            cursor.setPosition(end)
+            end_block = cursor.blockNumber()
+            # If selection ends exactly at the start of a line, exclude that line
+            if cursor.positionInBlock() == 0 and end > start:
+                end_block -= 1
+        else:
+            start_block = cursor.blockNumber()
+            end_block = start_block
+
+        cursor.beginEditBlock()
+        for block_num in range(start_block, end_block + 1):
+            block = doc.findBlockByNumber(block_num)
+            text = block.text()
+            spaces_to_remove = 0
+            for ch in text[:4]:
+                if ch == ' ':
+                    spaces_to_remove += 1
+                else:
+                    break
+            if spaces_to_remove > 0:
+                cursor.setPosition(block.position())
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.Right,
+                    QTextCursor.MoveMode.KeepAnchor,
+                    spaces_to_remove
+                )
+                cursor.removeSelectedText()
+        cursor.endEditBlock()
+
     def _find(self):
         # Simple find implementation
         editor = self.editor_tabs.get_current_editor()
@@ -1137,6 +1249,13 @@ class StepsIDEMainWindow(QMainWindow):
             action.setChecked(name == current)
     
     # View operations
+    def _toggle_toolbar(self):
+        visible = self.toolbar.isVisible()
+        self.toolbar.setVisible(not visible)
+        self.settings.settings.window.toolbar_visible = not visible
+        self.settings.save()
+        self.toggle_toolbar_action.setChecked(not visible)
+
     def _toggle_file_browser(self):
         visible = self.file_browser.isVisible()
         self.file_browser.setVisible(not visible)

@@ -247,6 +247,39 @@ class TestAttemptStatement:
         assert result.success
         assert result.output_lines == ["try\n", "finally\n"]
 
+    def test_problem_message_available_in_unsuccessful(self):
+        result = run("""building: test
+    attempt:
+        set value to "abc" as number
+    if unsuccessful:
+        display problem_message
+""")
+        assert result.success
+        assert len(result.output_lines) == 1
+        assert result.output_lines[0].strip() != ""
+
+    def test_problem_message_contains_error_text(self):
+        result = run("""building: test
+    attempt:
+        set result to 10 / 0
+    if unsuccessful:
+        display "caught: " added to problem_message
+""")
+        assert result.success
+        assert len(result.output_lines) == 1
+        assert "caught: " in result.output_lines[0]
+
+    def test_problem_message_not_leaking_outside_unsuccessful(self):
+        """problem_message should not be accessible after the if unsuccessful: block."""
+        result = run("""building: test
+    attempt:
+        set value to "abc" as number
+    if unsuccessful:
+        display "handled"
+    display problem_message
+""")
+        assert not result.success
+
 
 # =============================================================================
 # Expression Tests

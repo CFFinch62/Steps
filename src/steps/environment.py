@@ -23,6 +23,7 @@ class StepDefinition:
     parameters: List[str]
     returns: Optional[str]
     body: Any  # List[StatementNode] - avoiding circular import
+    declarations: Any = field(default_factory=list)  # List[DeclarationNode] - avoiding circular import
     risers: Dict[str, "RiserDefinition"] = field(default_factory=dict)
     file_path: Optional[Path] = None
 

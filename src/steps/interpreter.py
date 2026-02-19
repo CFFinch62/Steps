@@ -217,6 +217,14 @@ class Interpreter:
             for param_name, arg_value in zip(step_def.parameters, arguments):
                 self.env.set_variable(param_name, arg_value, is_declaration=True)
 
+            # Process declarations (if any)
+            for decl in step_def.declarations:
+                self.env.declare_variable(
+                    decl.name,
+                    decl.type_name,
+                    decl.is_fixed
+                )
+
             # Register risers in current scope
             self._current_risers = step_def.risers
 
@@ -443,21 +451,21 @@ class Interpreter:
     
     def _exec_repeat_while(self, stmt: RepeatWhileStatement) -> None:
         """Execute: repeat while condition"""
-        max_iterations = 10000  # Safety limit
+        max_iterations = 10_000_000  # Safety limit (increased for legitimate use cases like Project Euler)
         iterations = 0
-        
+
         while True:
             condition = self.evaluate_expression(stmt.condition)
             if not condition.is_truthy():
                 break
-            
+
             self._execute_block(stmt.body)
-            
+
             iterations += 1
             if iterations >= max_iterations:
                 raise StepsRuntimeError(
                     code=ErrorCode.E410,
-                    message="Maximum loop iterations exceeded (10000).",
+                    message=f"Maximum loop iterations exceeded ({max_iterations:,}).",
                     file=stmt.location.file,
                     line=stmt.location.line,
                     column=stmt.location.column,
@@ -476,8 +484,18 @@ class Interpreter:
         except StepsError as e:
             # Failure - execute unsuccessful block
             if stmt.unsuccessful_body:
-                self._execute_block(stmt.unsuccessful_body)
-            
+                # Make problem_message available inside the if unsuccessful: block
+                self.env.push_scope()
+                try:
+                    self.env.set_variable(
+                        "problem_message",
+                        StepsText(e.message),
+                        is_declaration=True
+                    )
+                    self._execute_block(stmt.unsuccessful_body)
+                finally:
+                    self.env.pop_scope()
+
             # Then continue if specified
             if stmt.continue_body:
                 self._execute_block(stmt.continue_body)

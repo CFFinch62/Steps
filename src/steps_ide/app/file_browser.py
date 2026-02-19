@@ -172,17 +172,7 @@ class FileBrowserWidget(QWidget):
         self.refresh_btn.setText("⟳")
         self.refresh_btn.setToolTip("Refresh")
         self.toolbar.addWidget(self.refresh_btn)
-        
-        self.new_file_btn = QToolButton()
-        self.new_file_btn.setText("+📄")
-        self.new_file_btn.setToolTip("New File")
-        self.toolbar.addWidget(self.new_file_btn)
-        
-        self.new_folder_btn = QToolButton()
-        self.new_folder_btn.setText("+📁")
-        self.new_folder_btn.setToolTip("New Folder")
-        self.toolbar.addWidget(self.new_folder_btn)
-        
+
         self.toolbar.addSeparator()
         
         self.bookmark_btn = QToolButton()
@@ -276,8 +266,6 @@ class FileBrowserWidget(QWidget):
         self.up_btn.clicked.connect(self._go_up)
         self.home_btn.clicked.connect(self._go_home)
         self.refresh_btn.clicked.connect(self._refresh)
-        self.new_file_btn.clicked.connect(self._create_new_file)
-        self.new_folder_btn.clicked.connect(self._create_new_folder)
         self.bookmark_btn.clicked.connect(self._bookmark_current_folder)
         
         self.hidden_toggle.toggled.connect(self._toggle_hidden_files)

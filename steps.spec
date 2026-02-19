@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['src/steps_ide/main.py'],
-    pathex=[],
+    ['src/steps/main.py'],
+    pathex=['src'],
     binaries=[],
-    datas=[('src/steps/stdlib', 'steps/stdlib'), ('docs/QUICK-REFERENCE.md', 'docs')],
-    hiddenimports=['PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets'],
+    datas=[('src/steps/stdlib', 'steps/stdlib')],
+    hiddenimports=['steps_repl', 'steps_repl.repl', 'steps_repl.commands', 'steps_repl.environment'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -19,26 +19,20 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
-    name='StepsIDE',
+    name='steps',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='StepsIDE',
 )

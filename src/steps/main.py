@@ -14,9 +14,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .loader import load_project, load_building_source
-from .interpreter import run_building, ExecutionResult
-from .errors import StepsError
+from steps.loader import load_project, load_building_source
+from steps.interpreter import run_building, ExecutionResult
+from steps.errors import StepsError
 
 
 def run_project(project_path: str) -> int:
@@ -161,10 +161,10 @@ def run_step(step_path: str, args: Optional[list] = None) -> int:
         Exit code (0 for success, 1 for error)
     """
     from typing import cast, List
-    from .lexer import Lexer
-    from .parser import Parser
-    from .ast_nodes import StepNode
-    from .environment import Environment, StepDefinition
+    from steps.lexer import Lexer
+    from steps.parser import Parser
+    from steps.ast_nodes import StepNode
+    from steps.environment import Environment, StepDefinition
     
     path = Path(step_path)
     
@@ -273,6 +273,7 @@ def run_step(step_path: str, args: Optional[list] = None) -> int:
         parameters=param_names,
         returns=step_node.returns.name if step_node.returns else None,
         body=step_node.body,
+        declarations=step_node.declarations,  # Include declarations from the step
         risers=risers,
         file_path=path
     )
