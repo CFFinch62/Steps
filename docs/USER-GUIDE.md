@@ -212,6 +212,7 @@ python -m steps_ide.main
 | Ctrl+B | Toggle file browser |
 | Ctrl+Shift+P | Toggle project browser |
 | Ctrl+J | Toggle terminal |
+| Ctrl+D | Show project diagram |
 | Ctrl+F5 | Run Steps project |
 | F5 | Start debugging |
 | Shift+F5 | Stop debugging |
@@ -227,6 +228,7 @@ python -m steps_ide.main
 4. **Terminal Panel**: See output and error messages
 5. **Command Palette**: Access all commands with Ctrl+P
 6. **Integrated Debugger**: Step through code, inspect variables, set breakpoints
+7. **Project Diagram Viewer**: Visualize program architecture with Ctrl+D
 
 ---
 
@@ -295,9 +297,38 @@ The debug panel shows two tabs:
 
 ## Diagram Tool
 
-The `steps diagram` command generates ASCII art flow diagrams showing the structure of your Steps programs.
+The diagram tool generates ASCII art flow diagrams showing the structure of your Steps programs. You can use it from the command line or directly in the IDE.
 
-### Usage
+### Using Diagrams in the IDE
+
+The IDE includes an integrated diagram viewer for visualizing your project structure.
+
+**To view a diagram:**
+
+1. **With a file open**: Press **Ctrl+D** or go to **View → Show Project Diagram**
+   - The IDE automatically detects the project from your currently open file
+
+2. **Without a file open**: Press **Ctrl+D** and select your project folder
+   - The IDE will prompt you to choose a folder containing a `.building` file
+
+**Diagram Tab Features:**
+
+- **Read-only viewer**: Displays the diagram with proper monospace formatting
+- **Save button**: Click "💾 Save Diagram As..." to export the diagram to a `.txt` file
+- **Single tab**: Only one diagram tab exists at a time - opening a new diagram updates the existing tab
+- **Theme-aware**: The diagram viewer respects your IDE theme settings
+
+**Font Recommendations:**
+
+For best diagram display, use a monospace font that supports Unicode box-drawing characters:
+- Courier New (recommended)
+- Courier
+- Consolas
+- Monaco
+
+The IDE will warn you if your current font may not display diagrams correctly.
+
+### Using Diagrams from the Command Line
 
 ```bash
 python -m steps.main diagram <path_to_project>
@@ -317,22 +348,23 @@ The diagram displays your program's architecture:
 ### Example Output
 
 ```
-┌──────────────────────────────────────────────────────┐
-│ 🏢 BUILDING: tip_calculator                           │
-├──────────────────────────────────────────────────────┤
-│                                                       │
-│  ┌────────────────────────────────────────────────┐  │
-│  │ 📂 FLOOR: calculations                          │  │
-│  ├────────────────────────────────────────────────┤  │
-│  │                                                 │  │
-│  │    ┌────────────────────────────────────────┐   │  │
-│  │    │ 🔷 calculate_tip                        │   │  │
-│  │    │   needs: bill, rate                     │   │  │
-│  │    │   returns: number                       │   │  │
-│  │    └────────────────────────────────────────┘   │  │
-│  │                                                 │  │
-│  └────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│ 🏢 BUILDING: tip_calculator                      │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│  ┌────────────────────────────────────────────┐  │
+│  │ 📂 FLOOR: calculations                     │  │
+│  ├────────────────────────────────────────────┤  │
+│  │                                            │  │
+│  │    ┌────────────────────────────────────┐  │  │
+│  │    │ 🔷 calculate_tip                   │  │  │
+│  │    │   needs: bill, rate                │  │  │
+│  │    │   returns: number                  │  │  │
+│  │    └────────────────────────────────────┘  │  │
+│  │                                            │  │
+│  └────────────────────────────────────────────┘  │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
 ### When to Use It
@@ -341,6 +373,7 @@ The diagram displays your program's architecture:
 - **Documentation**: Generate architecture diagrams for your README
 - **Teaching**: Show students how to structure their code
 - **Planning**: Visualize your project before building it
+- **Code review**: Share project structure with instructors or peers
 
 ---
 

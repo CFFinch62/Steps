@@ -702,7 +702,14 @@ class StepsIDEMainWindow(QMainWindow):
         zoom_reset_action.triggered.connect(self._zoom_reset)
         
         view_menu.addSeparator()
-        
+
+        # Project diagram
+        diagram_action = view_menu.addAction("Show Project &Diagram")
+        diagram_action.setShortcut("Ctrl+D")
+        diagram_action.triggered.connect(self._show_diagram)
+
+        view_menu.addSeparator()
+
         # Theme submenu
         theme_menu = view_menu.addMenu("&Theme")
         self.theme_actions = []
@@ -1380,7 +1387,104 @@ class StepsIDEMainWindow(QMainWindow):
     def _set_theme(self, theme_name: str):
         self.theme_manager.set_theme(theme_name)
         self._apply_settings()
-    
+
+    def _show_diagram(self):
+        """Show project diagram for the current project"""
+        from pathlib import Path
+        from steps.loader import load_project
+        from steps.diagram import generate_flow_diagram
+        from steps_ide.app.editor import validate_diagram_font
+
+        # Determine project path
+        project_path = None
+
+        # Try to get from currently open file
+        current_file = self.editor_tabs.get_current_filepath()
+        if current_file:
+            file_path = Path(current_file)
+            # Find project root (directory containing .building file)
+            search_path = file_path.parent
+            while search_path != search_path.parent:
+                if list(search_path.glob('*.building')):
+                    project_path = search_path
+                    break
+                search_path = search_path.parent
+
+        # If no file open or no project found, ask user to select
+        if not project_path:
+            from PyQt6.QtWidgets import QFileDialog
+            folder = QFileDialog.getExistingDirectory(
+                self,
+                "Select Steps Project Folder",
+                self.file_browser.current_root or str(Path.home())
+            )
+            if not folder:
+                return  # User cancelled
+
+            project_path = Path(folder)
+
+            # Verify it's a Steps project
+            if not list(project_path.glob('*.building')):
+                QMessageBox.warning(
+                    self,
+                    "Not a Steps Project",
+                    f"The selected folder does not contain a .building file.\n\n"
+                    f"Please select a valid Steps project directory."
+                )
+                return
+
+        # Validate font before generating diagram
+        current_font = self.settings.settings.editor.font_family
+        from PyQt6.QtGui import QFont
+        test_font = QFont(current_font, 10)
+        is_valid, warning_msg = validate_diagram_font(test_font)
+
+        if not is_valid:
+            reply = QMessageBox.question(
+                self,
+                "Font Warning",
+                f"The current editor font may not display the diagram correctly:\n\n"
+                f"{warning_msg}\n\n"
+                f"Recommended fonts: JetBrains Mono, Consolas, Courier New\n\n"
+                f"Do you want to continue anyway?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply == QMessageBox.StandardButton.No:
+                return
+
+        # Load project and generate diagram
+        try:
+            building, environment, errors = load_project(project_path)
+
+            if errors or building is None:
+                error_msg = "Failed to load project:\n\n"
+                for error in errors[:5]:  # Show first 5 errors
+                    error_msg += f"• {error}\n"
+                if len(errors) > 5:
+                    error_msg += f"\n... and {len(errors) - 5} more errors"
+
+                QMessageBox.critical(self, "Project Load Error", error_msg)
+                return
+
+            # Generate diagram
+            diagram = generate_flow_diagram(building, environment, project_path)
+
+            # Show in diagram tab
+            project_name = project_path.name
+            self.editor_tabs.show_diagram(diagram, project_name)
+
+            self.statusbar.showMessage(f"Generated diagram for project: {project_name}", 3000)
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to generate diagram:\n\n{str(e)}"
+            )
+            import traceback
+            traceback.print_exc()
+
     # Run operations
     def _run_current_project(self):
         """Run the current Steps file or project"""

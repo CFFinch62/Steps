@@ -102,6 +102,8 @@ The IDE provides a full development environment with:
 - Syntax-aware editor
 - Run (F5) and Check (F6) commands
 - Terminal output panel (Ctrl+J)
+- Project diagram viewer (Ctrl+D)
+- Integrated debugger with breakpoints
 
 ---
 
@@ -187,7 +189,7 @@ step: apply_discount
 | `python -m steps.main run <path>` | Run a Steps project |
 | `python -m steps.main check <path>` | Validate syntax without running |
 | `python -m steps.main repl` | Start the interactive REPL |
-| `python -m steps.main diagram <path>` | Generate ASCII flow diagram |
+| `python -m steps.main diagram <path>` | Generate ASCII flow diagram (also available in IDE with Ctrl+D) |
 | `python -m steps_repl.main` | Start REPL directly |
 | `python -m steps_ide.main` | Launch the Steps IDE |
 

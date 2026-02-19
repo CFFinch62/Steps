@@ -9,7 +9,7 @@ from typing import Optional, Dict, List
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QTabWidget,
-    QLabel, QFrame, QMessageBox, QFileDialog, QMenu, QTextEdit
+    QLabel, QFrame, QMessageBox, QFileDialog, QMenu, QTextEdit, QPushButton
 )
 from PyQt6.QtCore import (
     Qt, QRect, QSize, pyqtSignal, QTimer, QRegularExpression
@@ -17,7 +17,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import (
     QColor, QPainter, QTextFormat, QFont, QFontMetrics, QTextCursor,
     QKeySequence, QAction, QPaintEvent, QTextCharFormat, QTextDocument,
-    QKeyEvent, QWheelEvent
+    QKeyEvent, QWheelEvent, QFontInfo
 )
 
 from steps_ide.app.settings import SettingsManager
@@ -514,9 +514,109 @@ class CodeEditor(QPlainTextEdit):
         self.setTabStopDistance(metrics.horizontalAdvance(' ') * tab_width)
 
 
+class DiagramViewer(QWidget):
+    """Read-only viewer for ASCII project diagrams"""
+
+    def __init__(self, diagram_content: str, project_name: str, theme: Theme, parent=None):
+        super().__init__(parent)
+        self.diagram_content = diagram_content
+        self.project_name = project_name
+        self.theme = theme
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Set up the diagram viewer UI"""
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # Toolbar with save button
+        toolbar = QHBoxLayout()
+        toolbar.setContentsMargins(5, 5, 5, 5)
+
+        save_btn = QPushButton("💾 Save Diagram As...")
+        save_btn.clicked.connect(self._save_diagram)
+        toolbar.addWidget(save_btn)
+
+        toolbar.addStretch()
+
+        info_label = QLabel(f"Project: {self.project_name}")
+        info_label.setStyleSheet("color: gray; font-size: 10pt;")
+        toolbar.addWidget(info_label)
+
+        layout.addLayout(toolbar)
+
+        # Text viewer - use QTextEdit for better emoji rendering
+        from PyQt6.QtWidgets import QTextEdit
+        self.text_viewer = QTextEdit()
+        self.text_viewer.setReadOnly(True)
+        self.text_viewer.setPlainText(self.diagram_content)
+        self.text_viewer.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
+        # Set monospace font - try multiple options
+        # Use a larger font size for better emoji rendering
+        font_families = ["Courier New", "Courier", "Consolas", "Monaco", "Monospace"]
+        font = None
+        for family in font_families:
+            test_font = QFont(family, 11)
+            if QFontInfo(test_font).fixedPitch():
+                font = test_font
+                break
+
+        if font is None:
+            # Last resort fallback
+            font = QFont("Monospace", 11)
+            font.setStyleHint(QFont.StyleHint.TypeWriter)
+
+        font.setFixedPitch(True)
+        self.text_viewer.setFont(font)
+
+        # Apply theme colors
+        self.text_viewer.setStyleSheet(f"""
+            QTextEdit {{
+                background-color: {self.theme.editor_background};
+                color: {self.theme.editor_foreground};
+                border: none;
+                font-family: monospace;
+            }}
+        """)
+
+        layout.addWidget(self.text_viewer)
+
+    def _save_diagram(self):
+        """Save the diagram to a file"""
+        default_filename = f"{self.project_name}_diagram.txt"
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Diagram As",
+            default_filename,
+            "Text Files (*.txt);;All Files (*)"
+        )
+
+        if filepath:
+            try:
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(self.diagram_content)
+                QMessageBox.information(self, "Success", f"Diagram saved to:\n{filepath}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Could not save diagram:\n{e}")
+
+    def set_theme(self, theme: Theme):
+        """Update the theme"""
+        self.theme = theme
+        self.text_viewer.setStyleSheet(f"""
+            QTextEdit {{
+                background-color: {theme.editor_background};
+                color: {theme.editor_foreground};
+                border: none;
+                font-family: monospace;
+            }}
+        """)
+
+
 class EditorTabs(QTabWidget):
     """Tabbed editor widget managing multiple code editors"""
-    
+
     file_opened = pyqtSignal(str)
     file_saved = pyqtSignal(str)
     file_closed = pyqtSignal(str)
@@ -608,7 +708,39 @@ class EditorTabs(QTabWidget):
         self.editors[filepath] = editor
         index = self.addTab(editor, name)
         self.setCurrentIndex(index)
-    
+
+    def show_diagram(self, diagram_content: str, project_name: str):
+        """Show project diagram in a tab (reuse existing diagram tab if present)"""
+        diagram_key = "__diagram__"
+
+        # Check if diagram tab already exists
+        if diagram_key in self.editors:
+            # Find and update existing diagram tab
+            for i in range(self.count()):
+                widget = self.widget(i)
+                if isinstance(widget, DiagramViewer):
+                    # Update content
+                    widget.diagram_content = diagram_content
+                    widget.project_name = project_name
+                    widget.text_viewer.setPlainText(diagram_content)
+                    # Switch to this tab
+                    self.setCurrentIndex(i)
+                    return
+
+        # Create new diagram viewer
+        viewer = DiagramViewer(
+            diagram_content,
+            project_name,
+            self.theme_manager.get_current_theme(),
+            self
+        )
+
+        # Add to editors dict and create tab
+        self.editors[diagram_key] = viewer
+        index = self.addTab(viewer, f"📊 {project_name} Diagram")
+        self.setTabToolTip(index, f"Project Diagram: {project_name}")
+        self.setCurrentIndex(index)
+
     def save_current(self) -> bool:
         """Save the current file"""
         editor = self.currentWidget()
@@ -820,14 +952,16 @@ class EditorTabs(QTabWidget):
         return self.editors.get(filepath)
     
     def set_theme(self, theme: Theme):
-        """Update theme for all editors"""
-        for editor in self.editors.values():
-            editor.set_theme(theme)
+        """Update theme for all editors and diagram viewers"""
+        for widget in self.editors.values():
+            if hasattr(widget, 'set_theme'):
+                widget.set_theme(theme)
     
     def refresh_settings(self):
         """Refresh settings for all editors"""
-        for editor in self.editors.values():
-            editor.refresh_settings()
+        for widget in self.editors.values():
+            if hasattr(widget, 'refresh_settings'):
+                widget.refresh_settings()
     
     
     def goto_line(self, line: int):
@@ -961,4 +1095,45 @@ class EditorTabs(QTabWidget):
                         self.setTabText(i, os.path.basename(new_filepath))
                         self.setTabToolTip(i, new_filepath)
                         break
+
+
+def validate_diagram_font(font: QFont) -> tuple[bool, str]:
+    """Validate if a font is suitable for displaying ASCII diagrams.
+
+    Args:
+        font: The font to validate
+
+    Returns:
+        Tuple of (is_valid, warning_message)
+        - is_valid: True if font is suitable, False otherwise
+        - warning_message: Empty string if valid, warning message otherwise
+    """
+    font_info = QFontInfo(font)
+    warnings = []
+
+    # Check if monospace
+    if not font_info.fixedPitch():
+        warnings.append("Font is not monospace - diagram may not align properly")
+
+    # Check Unicode support for box-drawing characters
+    metrics = QFontMetrics(font)
+    # Test single-byte box-drawing characters (emojis are multi-byte and harder to test)
+    test_chars = ['┌', '─', '│']
+    missing_chars = []
+
+    for char in test_chars:
+        try:
+            if not metrics.inFont(char):
+                missing_chars.append(char)
+        except ValueError:
+            # Character is multi-byte, skip it
+            pass
+
+    if missing_chars:
+        warnings.append(f"Font may not support some Unicode box-drawing characters: {', '.join(missing_chars)}")
+
+    if warnings:
+        return False, "\n".join(warnings)
+
+    return True, ""
 

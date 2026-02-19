@@ -56,8 +56,9 @@ def generate_flow_diagram(
     lines: List[str] = []
     
     # Building header
+    # Note: Emojis take 2 char widths, so reduce padding by 1 for each emoji
     lines.append("┌" + "─" * 50 + "┐")
-    lines.append(f"│ 🏢 BUILDING: {building.name:<36} │")
+    lines.append(f"│ 🏢 BUILDING: {building.name:<35} │")
     lines.append("├" + "─" * 50 + "┤")
     
     # Get floors from the environment - filter to project-only if path provided
@@ -80,9 +81,9 @@ def generate_flow_diagram(
             step_names = list(floor_steps.keys())
             
             # Floor box
-            lines.append("│                                                    │")
+            lines.append("│                                                  │")
             lines.append(f"│  ┌{'─' * 44}┐  │")
-            lines.append(f"│  │ 📂 FLOOR: {floor_name:<32} │  │")
+            lines.append(f"│  │ 📂 FLOOR: {floor_name:<31} │  │")
             lines.append(f"│  ├{'─' * 44}┤  │")
             
             if not step_names:
@@ -95,28 +96,28 @@ def generate_flow_diagram(
                     returns = _format_returns(step_def)
                     
                     lines.append(f"│  │                                            │  │")
-                    lines.append(f"│  │    ┌{'─' * 36}┐   │  │")
-                    lines.append(f"│  │    │ 🔷 {step_name:<32} │   │  │")
+                    lines.append(f"│  │    ┌{'─' * 36}┐  │  │")
+                    lines.append(f"│  │    │ 🔷 {step_name:<31} │  │  │")
                     if params:
-                        lines.append(f"│  │    │   needs: {params:<26} │   │  │")
+                        lines.append(f"│  │    │   needs: {params:<25} │  │  │")
                     if returns:
-                        lines.append(f"│  │    │   returns: {returns:<24} │   │  │")
-                    lines.append(f"│  │    └{'─' * 36}┘   │  │")
-                    
+                        lines.append(f"│  │    │   returns: {returns:<23} │  │  │")
+                    lines.append(f"│  │    └{'─' * 36}┘  │  │")
+
                     # Arrow between steps
                     if j < len(step_names) - 1:
-                        lines.append(f"│  │            │                              │  │")
-                        lines.append(f"│  │            ▼                              │  │")
+                        lines.append(f"│  │            │                               │  │")
+                        lines.append(f"│  │            ▼                               │  │")
             
             lines.append(f"│  │                                            │  │")
             lines.append(f"│  └{'─' * 44}┘  │")
-            
+
             # Arrow between floors
             if i < len(floor_names) - 1:
-                lines.append("│                    │                              │")
-                lines.append("│                    ▼                              │")
-    
-    lines.append("│                                                    │")
+                lines.append("│                    │                             │")
+                lines.append("│                    ▼                             │")
+
+    lines.append("│                                                  │")
     lines.append("└" + "─" * 50 + "┘")
     
     return "\n".join(lines)
