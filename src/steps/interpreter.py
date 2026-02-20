@@ -248,8 +248,16 @@ class Interpreter:
     
     def execute_statement(self, stmt: StatementNode) -> None:
         """Execute a statement."""
+        from .ast_nodes import IndicateStatement, ClearConsoleStatement, SetIterationLimitStatement
+
         if isinstance(stmt, DisplayStatement):
             self._exec_display(stmt)
+        elif isinstance(stmt, IndicateStatement):
+            self._exec_indicate(stmt)
+        elif isinstance(stmt, ClearConsoleStatement):
+            self._exec_clear_console(stmt)
+        elif isinstance(stmt, SetIterationLimitStatement):
+            self._exec_set_iteration_limit(stmt)
         elif isinstance(stmt, SetStatement):
             self._exec_set(stmt)
         elif isinstance(stmt, SetIndexStatement):
@@ -290,7 +298,49 @@ class Interpreter:
         """Execute: display expression"""
         value = self.evaluate_expression(stmt.expression)
         self.env.write_output(value.display_string() + "\n")
-    
+
+    def _exec_indicate(self, stmt: "IndicateStatement") -> None:
+        """Execute: indicate expression (display without newline)"""
+        value = self.evaluate_expression(stmt.expression)
+        self.env.write_output(value.display_string())
+
+    def _exec_clear_console(self, stmt: "ClearConsoleStatement") -> None:
+        """Execute: clear console"""
+        import os
+        import platform
+
+        # Use ANSI escape sequences (works on most modern terminals)
+        # This is cross-platform and works on Windows 10+, Linux, and macOS
+        self.env.write_output("\033[2J\033[H")
+
+    def _exec_set_iteration_limit(self, stmt: "SetIterationLimitStatement") -> None:
+        """Execute: set iteration limit to value"""
+        limit_value = self.evaluate_expression(stmt.limit)
+
+        if not isinstance(limit_value, StepsNumber):
+            raise StepsTypeError(
+                code=ErrorCode.E302,
+                message=f"Iteration limit must be a number, got {limit_value.type_name()}.",
+                file=stmt.location.file,
+                line=stmt.location.line,
+                column=stmt.location.column,
+                hint="The iteration limit must be a positive number."
+            )
+
+        limit = int(limit_value.value)
+        if limit <= 0:
+            raise StepsRuntimeError(
+                code=ErrorCode.E301,
+                message=f"Iteration limit must be positive, got {limit}.",
+                file=stmt.location.file,
+                line=stmt.location.line,
+                column=stmt.location.column,
+                hint="Set the iteration limit to a positive number."
+            )
+
+        # Store the iteration limit in the environment
+        self.env.iteration_limit = limit
+
     def _exec_set(self, stmt: SetStatement) -> None:
         """Execute: set target to value"""
         value = self.evaluate_expression(stmt.value)
@@ -451,7 +501,8 @@ class Interpreter:
     
     def _exec_repeat_while(self, stmt: RepeatWhileStatement) -> None:
         """Execute: repeat while condition"""
-        max_iterations = 10_000_000  # Safety limit (increased for legitimate use cases like Project Euler)
+        # Use the iteration limit from the environment (can be changed with "set iteration limit to")
+        max_iterations = self.env.iteration_limit
         iterations = 0
 
         while True:
@@ -469,7 +520,7 @@ class Interpreter:
                     file=stmt.location.file,
                     line=stmt.location.line,
                     column=stmt.location.column,
-                    hint="Your loop may be infinite. Check the condition."
+                    hint="Your loop may be infinite. Check the condition, or use 'set iteration limit to <number>' to increase the limit."
                 )
     
     def _exec_attempt(self, stmt: AttemptStatement) -> None:

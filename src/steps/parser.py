@@ -569,8 +569,16 @@ class Parser:
         # display expression
         if self.match(TokenType.DISPLAY):
             return self.parse_display()
-        
-        # set target to value
+
+        # indicate expression (display without newline)
+        if self.match(TokenType.INDICATE):
+            return self.parse_indicate()
+
+        # clear console
+        if self.match(TokenType.CLEAR):
+            return self.parse_clear()
+
+        # set target to value OR set iteration limit to value
         if self.match(TokenType.SET):
             return self.parse_set()
         
@@ -620,18 +628,55 @@ class Parser:
         start = self.previous
         expr = self.parse_expression()
         self.match(TokenType.NEWLINE)
-        
+
         return DisplayStatement(
             location=self.location_from(start),
             expression=expr
         )
-    
-    def parse_set(self) -> Union[SetStatement, SetIndexStatement]:
-        """Parse: set target to value OR set target[index] to value"""
+
+    def parse_indicate(self) -> "IndicateStatement":
+        """Parse: indicate expression"""
+        from .ast_nodes import IndicateStatement
         start = self.previous
-        
+        expr = self.parse_expression()
+        self.match(TokenType.NEWLINE)
+
+        return IndicateStatement(
+            location=self.location_from(start),
+            expression=expr
+        )
+
+    def parse_clear(self) -> "ClearConsoleStatement":
+        """Parse: clear console"""
+        from .ast_nodes import ClearConsoleStatement
+        start = self.previous
+        self.expect(TokenType.CONSOLE, "Expected 'console' after 'clear'")
+        self.match(TokenType.NEWLINE)
+
+        return ClearConsoleStatement(
+            location=self.location_from(start)
+        )
+
+    def parse_set(self) -> Union[SetStatement, "SetIterationLimitStatement", SetIndexStatement]:
+        """Parse: set target to value OR set target[index] to value OR set iteration limit to value"""
+        from .ast_nodes import SetIterationLimitStatement
+        start = self.previous
+
+        # Check for "set iteration limit to value"
+        if self.check(TokenType.ITERATION):
+            self.advance()  # consume 'iteration'
+            self.expect(TokenType.LIMIT, "Expected 'limit' after 'iteration'")
+            self.expect(TokenType.TO, "Expected 'to' after 'limit'")
+            limit_expr = self.parse_expression()
+            self.match(TokenType.NEWLINE)
+
+            return SetIterationLimitStatement(
+                location=self.location_from(start),
+                limit=limit_expr
+            )
+
         target_token = self.expect(TokenType.IDENTIFIER, "Expected variable name after 'set'")
-        
+
         # Check for bracket notation: set target[index] to value
         if self.match(TokenType.LBRACKET):
             index_expr = self.parse_expression()
@@ -640,19 +685,19 @@ class Parser:
             self.expect(TokenType.TO, "Expected 'to' after ']'")
             value = self.parse_expression()
             self.match(TokenType.NEWLINE)
-            
+
             return SetIndexStatement(
                 location=self.location_from(start),
                 target=target_token.value,
                 index=index_expr,
                 value=value
             )
-        
+
         # Normal assignment: set target to value
         self.expect(TokenType.TO, "Expected 'to' after variable name")
         value = self.parse_expression()
         self.match(TokenType.NEWLINE)
-        
+
         return SetStatement(
             location=self.location_from(start),
             target=target_token.value,

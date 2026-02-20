@@ -44,7 +44,12 @@ class TokenType(Enum):
     STORING_RESULT_IN = auto() # "storing result in"
     RETURN = auto()            # "return"
     DISPLAY = auto()           # "display"
+    INDICATE = auto()          # "indicate"
     INPUT = auto()             # "input"
+    CLEAR = auto()             # "clear"
+    CONSOLE = auto()           # "console"
+    ITERATION = auto()         # "iteration"
+    LIMIT = auto()             # "limit"
     
     # Control Flow
     IF = auto()                # "if"
@@ -220,7 +225,12 @@ KEYWORDS = {
     "with": TokenType.WITH,
     "return": TokenType.RETURN,
     "display": TokenType.DISPLAY,
+    "indicate": TokenType.INDICATE,
     "input": TokenType.INPUT,
+    "clear": TokenType.CLEAR,
+    "console": TokenType.CONSOLE,
+    "iteration": TokenType.ITERATION,
+    "limit": TokenType.LIMIT,
     
     # Control Flow
     "if": TokenType.IF,

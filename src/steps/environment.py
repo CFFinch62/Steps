@@ -117,13 +117,16 @@ class Environment:
         self.steps: Dict[str, StepDefinition] = {}
         self.floors: Dict[str, FloorDefinition] = {}
         self.building_name: str = ""
-        
+
         # Execution context
         self.current_step: Optional[str] = None
         self.current_floor: Optional[str] = None
         # Call stack tracks (name, location) pairs for debugger
         self._call_stack_entries: List[tuple] = []  # List of (name, SourceLocation)
-        
+
+        # Loop iteration limit (can be changed with "set iteration limit to")
+        self.iteration_limit: int = 10_000_000  # Default safety limit
+
         # Input/output handlers (can be overridden for testing)
         self.input_handler: Callable[[], str] = input
         self.output_handler: Callable[[str], None] = lambda msg: print(msg, end='')

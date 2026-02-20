@@ -431,7 +431,43 @@ display expression
 display "Hello, " added to name
 ```
 
-### 7.3 Return Statement
+Outputs the expression followed by a newline.
+
+### 7.3 Indicate Statement
+
+```steps
+indicate expression
+indicate "Loading..."
+```
+
+Outputs the expression **without** a newline. Useful for creating progress bars and dynamic console output.
+
+**Example: Progress bar that updates in place**
+```steps
+set i to 0
+repeat while i is less than or equal to 100
+    call progress_bar with i, 100, 40 storing result in bar
+    indicate "\r" added to "Progress: " added to bar
+    set i to i + 10
+display ""  # Final newline after progress completes
+```
+
+### 7.4 Clear Console Statement
+
+```steps
+clear console
+```
+
+Clears the terminal screen using ANSI escape sequences. Works on Windows 10+, Linux, and macOS.
+
+**Example:**
+```steps
+display "This will be cleared..."
+clear console
+display "Screen is now clear!"
+```
+
+### 7.5 Return Statement
 
 ```steps
 return expression
@@ -530,6 +566,32 @@ repeat while condition
 ### 8.7 Loop Control
 
 Currently, Steps does not have `break` or `continue`. Use conditionals within loops instead.
+
+### 8.8 Iteration Limit
+
+To prevent infinite loops, Steps enforces a maximum iteration limit (default: 10,000,000 iterations). You can temporarily adjust this limit when needed:
+
+```steps
+set iteration limit to 100000
+```
+
+**Example:**
+```steps
+note: Temporarily lower the limit for testing
+set iteration limit to 50
+
+set counter to 0
+attempt:
+    repeat while counter is less than 100
+        set counter to counter + 1
+if unsuccessful:
+    display "Loop stopped at iteration " added to (counter as text)
+
+note: Reset to default
+set iteration limit to 10000000
+```
+
+The iteration limit must be a positive number. This is a safety feature to prevent runaway loops.
 
 ---
 
@@ -842,12 +904,13 @@ as  fixed  set  to
 
 ### Invocation Keywords
 ```
-call  with  storing  result  in  return  display  input
+call  with  storing  result  in  return  display  indicate  input
 ```
 
 ### Control Flow Keywords
 ```
 if  otherwise  repeat  times  for  each  while
+exit  clear  console  set  iteration  limit
 ```
 
 ### Error Handling Keywords
@@ -936,9 +999,10 @@ riser_sections → expects? returns? declare? do
 
 ### Statements
 ```
-statement → set_stmt | display_stmt | call_stmt | return_stmt
-          | if_stmt | repeat_stmt | attempt_stmt | add_stmt
-          | remove_stmt | exit_stmt
+statement → set_stmt | display_stmt | indicate_stmt | clear_console_stmt
+          | call_stmt | return_stmt | if_stmt | repeat_stmt
+          | attempt_stmt | add_stmt | remove_stmt | exit_stmt
+          | set_iteration_limit_stmt
 ```
 
 ### Expressions

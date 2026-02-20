@@ -306,9 +306,17 @@ note: Draw a line
 call line with 40, "double" storing result in ln
 display ln
 
-note: Show progress
+note: Show progress (static)
 call progress_bar with 7, 10, 20 storing result in pb
 display pb
+
+note: Show progress (dynamic - updates in place)
+set i to 0
+repeat while i is less than or equal to 100
+    call progress_bar with i, 100, 40 storing result in bar
+    indicate "\r" added to "Progress: " added to bar
+    set i to i + 10
+display ""  # Final newline
 ```
 
 Output:

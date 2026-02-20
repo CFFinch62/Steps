@@ -450,6 +450,28 @@ display "Hello, World!"
 display "Your score is: " added to (score as text)
 ```
 
+The `display` statement outputs text followed by a newline.
+
+### Output Without Newline
+
+```steps
+indicate "Loading"
+indicate "."
+indicate "."
+indicate "."
+display " Done!"
+```
+
+The `indicate` statement outputs text **without** a newline. This is useful for creating progress bars and dynamic console output.
+
+### Clear the Console
+
+```steps
+clear console
+```
+
+Clears the terminal screen. Works on Windows 10+, Linux, and macOS.
+
 ### Getting Input
 
 ```steps
@@ -522,6 +544,18 @@ set count to 0
 repeat while count is less than 10
     display count
     set count to count + 1
+```
+
+**Iteration Limit:**
+
+To prevent infinite loops, Steps enforces a maximum iteration limit (default: 10,000,000). You can adjust this when needed:
+
+```steps
+set iteration limit to 100000
+
+note: Your loop code here
+
+set iteration limit to 10000000  # Reset to default
 ```
 
 ---
@@ -794,12 +828,25 @@ Output:
 
 ### Progress Bars
 
+**Static progress bar:**
 ```steps
 call progress_bar with 7, 10, 20 storing result in pb
 display "Loading: " added to pb
 ```
 
 Output: `Loading: [██████████████░░░░░░] 70%`
+
+**Dynamic progress bar (updates in place):**
+```steps
+set i to 0
+repeat while i is less than or equal to 100
+    call progress_bar with i, 100, 40 storing result in bar
+    indicate "\r" added to "Progress: " added to bar added to " " added to (i as text) added to "%"
+    set i to i + 10
+display ""  # Final newline after completion
+```
+
+This creates a progress bar that updates on the same line using `indicate` with the carriage return character `\r`.
 
 ### Menus
 

@@ -139,6 +139,13 @@ When naming variables, steps, floors, and buildings, follow these rules:
 
 Programs are more interesting when they interact with users!
 
+### Output Statements
+
+Steps provides two ways to output text:
+
+- **`display`** - Outputs text followed by a newline
+- **`indicate`** - Outputs text without a newline (useful for progress indicators)
+
 ### Example: `lesson_03_input.building`
 
 See `/projects/tutorial/lesson_03_input/lesson_03_input.building`

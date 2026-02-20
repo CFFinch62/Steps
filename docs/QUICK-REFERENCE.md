@@ -14,7 +14,8 @@ set person to ["name": "Bob", "age": 30]
 
 ### Display & Input
 ```steps
-display "Hello, World!"
+display "Hello, World!"                      # Output with newline
+indicate "Loading..."                        # Output without newline
 display "Your score: " added to (score as text)
 set name to input
 set age to input as number
@@ -67,6 +68,9 @@ repeat for each item in my_list
 # While loop
 repeat while count is less than 10
     set count to count + 1
+
+# Set iteration limit (default: 10,000,000)
+set iteration limit to 100000
 ```
 
 ## Data Types
@@ -173,6 +177,24 @@ then continue:
     display "Done"
 ```
 
+## Console Control
+
+```steps
+# Clear the terminal screen
+clear console
+
+# Display without newline (for progress bars, etc.)
+indicate "\r" added to "Progress: 50%"
+
+# Update progress bar in place
+set i to 0
+repeat while i is less than or equal to 100
+    call progress_bar with i, 100, 40 storing result in bar
+    indicate "\r" added to "Loading: " added to bar
+    set i to i + 10
+display ""  # Final newline
+```
+
 ## Type Conversion
 
 ```steps
@@ -220,4 +242,4 @@ my_project/
 
 ## Reserved Words
 
-`add`, `added`, `and`, `as`, `attempt`, `belongs`, `boolean`, `building`, `call`, `character`, `contains`, `continue`, `declare`, `display`, `do`, `each`, `else`, `end`, `ends`, `equals`, `exit`, `expects`, `false`, `fixed`, `floor`, `for`, `from`, `greater`, `if`, `in`, `input`, `is`, `less`, `list`, `length`, `not`, `note`, `nothing`, `number`, `of`, `or`, `otherwise`, `problem_message`, `remove`, `repeat`, `result`, `return`, `returns`, `riser`, `set`, `split`, `starts`, `step`, `storing`, `table`, `than`, `then`, `times`, `to`, `true`, `type`, `unsuccessful`, `while`, `with`
+`add`, `added`, `and`, `as`, `attempt`, `belongs`, `boolean`, `building`, `call`, `character`, `clear`, `console`, `contains`, `continue`, `declare`, `display`, `do`, `each`, `else`, `end`, `ends`, `equals`, `exit`, `expects`, `false`, `fixed`, `floor`, `for`, `from`, `greater`, `if`, `in`, `indicate`, `input`, `is`, `iteration`, `less`, `limit`, `list`, `length`, `not`, `note`, `nothing`, `number`, `of`, `or`, `otherwise`, `problem_message`, `remove`, `repeat`, `result`, `return`, `returns`, `riser`, `set`, `split`, `starts`, `step`, `storing`, `table`, `than`, `then`, `times`, `to`, `true`, `type`, `unsuccessful`, `while`, `with`

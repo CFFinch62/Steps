@@ -4,7 +4,7 @@ building: price_calculator_advanced
     note: A console application that calculates Price, Margin, Profit,
     note: Markup, and Cost given any two valid input values.
 
-    declare:
+    do:
         running as text
         first_choice as number
         second_choice as number
@@ -27,8 +27,6 @@ building: price_calculator_advanced
         PROFIT as number
         MARKUP as number
         COST as number
-
-    do:
         note: Menu choice constants
         set PRICE to 1
         set MARGIN to 2

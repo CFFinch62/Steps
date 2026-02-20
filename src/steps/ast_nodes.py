@@ -154,10 +154,64 @@ class StepNode(ASTNode):
 @dataclass
 class DisplayStatement(StatementNode):
     """Output to console.
-    
+
     Example: display "Hello, world!"
     """
     expression: ExpressionNode
+
+
+@dataclass
+class IndicateStatement(StatementNode):
+    """Output to console without newline.
+
+    Example: indicate "Progress: "
+    """
+    expression: ExpressionNode
+
+
+@dataclass
+class ClearConsoleStatement(StatementNode):
+    """Clear the console screen.
+
+    Example: clear console
+    """
+    pass
+
+
+@dataclass
+class SetIterationLimitStatement(StatementNode):
+    """Set the maximum iteration limit for loops.
+
+    Example: set iteration limit to 100000
+    """
+    limit: ExpressionNode
+
+
+@dataclass
+class WriteStatement(StatementNode):
+    """Output to console without newline.
+
+    Example: write "Progress: "
+    """
+    expression: ExpressionNode
+
+
+@dataclass
+class ClearConsoleStatement(StatementNode):
+    """Clear the console screen.
+
+    Example: clear console
+    """
+    pass
+
+
+@dataclass
+class SetIterationLimitStatement(StatementNode):
+    """Set the maximum iteration limit for loops.
+
+    Example: set iteration limit to 100000
+    """
+    limit: ExpressionNode
 
 
 @dataclass
