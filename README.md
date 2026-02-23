@@ -4,7 +4,7 @@
 [![Tests](https://img.shields.io/badge/tests-364%20passing-green.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![Steps IDE Screenshot](images/Steps.png)
+![Steps IDE Screenshot](images/StepsIDE.png)
 
 > **An educational programming language that makes program structure visible and mandatory.**
 
