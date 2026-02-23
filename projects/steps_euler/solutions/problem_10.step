@@ -2,30 +2,54 @@ step: problem_10
     belongs to: solutions
     expects: nothing
     returns: nothing
-      
-    declare:
-        max as number
-        answer as number
-        
-    do:
-        set max to 4000000
-        
-        call time storing result in start
 
-        call fib_even_sum with max storing result in answer
+    declare:
+        candidate as number
+        divisor as number
+        sr as number
+        is_prime as number
+        total as number
+        prog_val as number
+        label as text
+        pb as number
+        a as number
+
+    do:
+        set total to 2
+        set candidate to 3
+
+        call time storing result in start
+        
+        display("Calculation in progress..")
+        repeat while candidate is less than 2000000
+            set is_prime to 1
+            call sqrt with candidate storing result in sr
+            set divisor to 3
+    
+            repeat while divisor is less than or equal to sr
+                set a to candidate % divisor
+                if a is equal to 0
+                    set is_prime to 0
+                    set divisor to sr
+                set divisor to divisor + 2
+    
+            if is_prime is equal to 1
+                set total to total + candidate
+    
+            set candidate to candidate + 2
 
         display("###################################")
-        display("PROJECT EULER PROBLEM 2")
+        display("PROJECT EULER PROBLEM 10")
         display("###################################") 
         display("")
-        display("Find sum of even Fibonacci sequence")
-        display("values not to exceed 4,000,000")
+        display("Find the sum of all the primes below")
+        display("two million.")
         display("")  
-        display("Sum is: " added to answer)
+        display("The sum is: " added to total)
         display("###################################")
  
         call time storing result in finish
         set elapsed to (finish - start)
         display("Prosessing time: " added to elapsed as text added to " seconds.")
         
-rem: EXPECTED ANSWER: 4613732
+rem: EXPECTED ANSWER: 142913828922

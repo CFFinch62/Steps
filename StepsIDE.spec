@@ -5,7 +5,7 @@ a = Analysis(
     ['src/steps_ide/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/steps/stdlib', 'steps/stdlib'), ('docs/QUICK-REFERENCE.md', 'docs')],
+    datas=[('src/steps/stdlib', 'steps/stdlib'), ('docs/QUICK-REFERENCE.md', 'docs'), ('images', 'images')],
     hiddenimports=['PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets'],
     hookspath=[],
     hooksconfig={},
@@ -29,9 +29,10 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch=None,
+    target_arch='x86_64',
     codesign_identity=None,
     entitlements_file=None,
+    icon=['images/Steps.png'],
 )
 coll = COLLECT(
     exe,
@@ -41,4 +42,10 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='StepsIDE',
+)
+app = BUNDLE(
+    coll,
+    name='StepsIDE.app',
+    icon='images/Steps.png',
+    bundle_identifier='com.steps.stepsIDE',
 )

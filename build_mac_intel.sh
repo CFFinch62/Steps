@@ -1,0 +1,106 @@
+#!/bin/bash
+set -e
+
+# ============================================================
+#  Steps IDE - macOS Intel (x86_64) Build Script
+# ============================================================
+
+PROJECT_ROOT=$(pwd)
+DIST_DIR="$PROJECT_ROOT/dist/mac-intel"
+BUILD_DIR="$PROJECT_ROOT/build/mac-intel"
+VENV_DIR="$PROJECT_ROOT/venv-mac"
+
+echo "============================================"
+echo "  Steps IDE  ·  macOS Intel Build Script"
+echo "============================================"
+echo ""
+
+# ── Virtual environment ──────────────────────────────────────
+if [ ! -d "$VENV_DIR" ]; then
+    echo "📦 Creating venv-mac virtual environment..."
+    python3 -m venv "$VENV_DIR"
+    echo "✓ venv-mac created"
+else
+    echo "✓ venv-mac already exists"
+fi
+
+echo "🔌 Activating venv-mac..."
+source "$VENV_DIR/bin/activate"
+
+echo "⬆️  Upgrading pip..."
+pip install --upgrade pip --quiet
+
+echo "📥 Installing project dependencies..."
+pip install -e . --quiet
+pip install PyQt6 PyQt6-WebEngine --quiet
+
+# ── Clean previous Mac build ─────────────────────────────────
+echo ""
+echo "🧹 Cleaning previous mac-intel builds..."
+rm -rf "$DIST_DIR" "$BUILD_DIR"
+
+# ── PyInstaller ──────────────────────────────────────────────
+echo "📦 Installing PyInstaller..."
+pip install pyinstaller --quiet
+
+# ── Build Steps IDE (.app bundle) ───────────────────────────
+echo ""
+echo "🔨 Building Steps IDE..."
+pyinstaller --name="StepsIDE" \
+            --windowed \
+            --noconsole \
+            --clean \
+            --noconfirm \
+            --icon="images/Steps.png" \
+            --distpath "$DIST_DIR" \
+            --workpath "$BUILD_DIR" \
+            --add-data "src/steps/stdlib:steps/stdlib" \
+            --add-data "docs/QUICK-REFERENCE.md:docs" \
+            --add-data "images:images" \
+            --hidden-import "PyQt6.QtWebEngineCore" \
+            --hidden-import "PyQt6.QtWebEngineWidgets" \
+            --osx-bundle-identifier "com.steps.stepsIDE" \
+            --target-arch x86_64 \
+            src/steps_ide/main.py
+
+# ── Build Steps Interpreter (CLI binary) ────────────────────
+echo ""
+echo "🔨 Building Steps Interpreter..."
+pyinstaller --name="steps" \
+            --onefile \
+            --console \
+            --clean \
+            --noconfirm \
+            --distpath "$DIST_DIR" \
+            --workpath "$BUILD_DIR" \
+            --paths "src" \
+            --add-data "src/steps/stdlib:steps/stdlib" \
+            --hidden-import "steps_repl" \
+            --hidden-import "steps_repl.repl" \
+            --hidden-import "steps_repl.commands" \
+            --hidden-import "steps_repl.environment" \
+            --target-arch x86_64 \
+            src/steps/main.py
+
+# ── Convenience launcher ─────────────────────────────────────
+echo "#!/bin/bash" > "$DIST_DIR/run.sh"
+echo 'open "$(dirname "$0")/StepsIDE.app"' >> "$DIST_DIR/run.sh"
+chmod +x "$DIST_DIR/run.sh"
+
+# ── Done ─────────────────────────────────────────────────────
+echo ""
+echo "============================================"
+echo "  ✅ Build complete!"
+echo "============================================"
+echo ""
+echo "  🖥️  IDE app bundle : dist/mac-intel/StepsIDE.app"
+echo "  ⚙️  CLI interpreter: dist/mac-intel/steps"
+echo "  🚀 Quick launch   : dist/mac-intel/run.sh"
+echo ""
+echo "  To run the IDE directly:"
+echo "    open dist/mac-intel/StepsIDE.app"
+echo ""
+echo "  To install the CLI system-wide:"
+echo "    sudo cp dist/mac-intel/steps /usr/local/bin/steps"
+echo ""
+

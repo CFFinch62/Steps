@@ -5,14 +5,13 @@ True terminal emulator using xterm.js in QWebEngineView
 
 import os
 import sys
-import pty
 import select
 import signal
 import struct
-import fcntl
-import termios
 import shutil
 import json
+import threading
+import subprocess
 from pathlib import Path
 from typing import Optional, Callable
 
@@ -39,10 +38,15 @@ if IS_WINDOWS:
     except ImportError:
         HAS_WINPTY = False
         winpty = None
+else:
+    import pty
+    import fcntl
+    import termios
+    HAS_WINPTY = False
 
 
 class PtyReaderThread(QThread):
-    """Thread to read from PTY"""
+    """Thread to read from POSIX PTY"""
     
     data_received = pyqtSignal(str)
     finished_signal = pyqtSignal()
@@ -75,6 +79,63 @@ class PtyReaderThread(QThread):
         self.running = False
 
 
+class WinPtyReaderThread(QThread):
+    """Thread to read from Windows PTY (winpty)"""
+    
+    data_received = pyqtSignal(str)
+    finished_signal = pyqtSignal()
+
+    def __init__(self, pty_proc, parent=None):
+        super().__init__(parent)
+        self.pty_proc = pty_proc
+        self.running = True
+
+    def run(self):
+        while self.running:
+            try:
+                data = self.pty_proc.read()
+                if not data:
+                    break
+                self.data_received.emit(data)
+            except Exception:
+                break
+        self.finished_signal.emit()
+
+    def stop(self):
+        self.running = False
+
+
+class SubprocessReaderThread(QThread):
+    """Fallback thread to read from subprocess stdout on Windows"""
+    
+    data_received = pyqtSignal(str)
+    finished_signal = pyqtSignal()
+
+    def __init__(self, process, parent=None):
+        super().__init__(parent)
+        self.process = process
+        self.running = True
+
+    def run(self):
+        while self.running and self.process.poll() is None:
+            try:
+                # Use standard read
+                data = os.read(self.process.stdout.fileno(), 4096)
+                if data:
+                    text = data.decode('utf-8', errors='replace')
+                    if sys.platform == 'win32':
+                        text = text.replace('\n', '\r\n')
+                    self.data_received.emit(text)
+                else:
+                    break
+            except Exception:
+                break
+        self.finished_signal.emit()
+
+    def stop(self):
+        self.running = False
+
+
 class TerminalBridge(QObject):
     """Bridge between xterm.js and Python PTY via QWebChannel"""
     
@@ -84,7 +145,9 @@ class TerminalBridge(QObject):
         super().__init__(parent)
         self.master_fd: Optional[int] = None
         self.child_pid: Optional[int] = None
-        self.reader_thread: Optional[PtyReaderThread] = None
+        self.winpty_proc = None
+        self.subprocess_proc = None
+        self.reader_thread = None
         self.input_callback: Optional[Callable[[str], None]] = None
         self.input_buffer: str = ""
     
@@ -111,88 +174,172 @@ class TerminalBridge(QObject):
                     self.dataReceived.emit(char)
             return
 
-        if self.master_fd is not None:
-            try:
-                os.write(self.master_fd, data.encode('utf-8'))
-            except OSError:
-                pass
+        if IS_WINDOWS:
+            if self.winpty_proc is not None:
+                try:
+                    self.winpty_proc.write(data)
+                except Exception:
+                    pass
+            elif self.subprocess_proc is not None:
+                try:
+                    self.subprocess_proc.stdin.write(data.encode('utf-8'))
+                    self.subprocess_proc.stdin.flush()
+                except Exception:
+                    pass
+        else:
+            if self.master_fd is not None:
+                try:
+                    os.write(self.master_fd, data.encode('utf-8'))
+                except OSError:
+                    pass
     
     @pyqtSlot(int, int)
     def resize(self, cols: int, rows: int):
         """Handle terminal resize from xterm.js"""
-        if self.master_fd is not None:
-            try:
-                winsize = struct.pack('HHHH', rows, cols, 0, 0)
-                fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, winsize)
-            except (OSError, IOError):
-                pass
+        if IS_WINDOWS:
+            if self.winpty_proc is not None:
+                try:
+                    self.winpty_proc.set_size(cols, rows)
+                except Exception:
+                    pass
+        else:
+            if self.master_fd is not None:
+                try:
+                    winsize = struct.pack('HHHH', rows, cols, 0, 0)
+                    fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, winsize)
+                except (OSError, IOError):
+                    pass
     
     def start_shell(self, shell: str = None, working_dir: str = None):
         """Start shell process"""
-        if self.child_pid is not None:
+        if self.child_pid is not None or self.winpty_proc is not None or self.subprocess_proc is not None:
             self.stop_shell()
         
         if not shell:
-            shell = os.environ.get('SHELL', '/bin/bash')
-        if not shutil.which(shell):
-            shell = '/bin/sh'
+            shell = os.environ.get('SHELL', 'cmd.exe' if IS_WINDOWS else '/bin/bash')
         
-        self.master_fd, slave_fd = pty.openpty()
-        self.child_pid = os.fork()
-        
-        if self.child_pid == 0:
-            os.close(self.master_fd)
-            os.setsid()
-            fcntl.ioctl(slave_fd, termios.TIOCSCTTY, 0)
-            os.dup2(slave_fd, 0)
-            os.dup2(slave_fd, 1)
-            os.dup2(slave_fd, 2)
-            if slave_fd > 2:
-                os.close(slave_fd)
-            if working_dir and os.path.isdir(working_dir):
-                os.chdir(working_dir)
-            os.environ['TERM'] = 'xterm-256color'
-            os.environ['COLORTERM'] = 'truecolor'
-            os.execlp(shell, shell)
+        if IS_WINDOWS:
+            if not shutil.which(shell) and shell == 'cmd.exe':
+                shell = 'cmd.exe' # cmd is usually in PATH anyway
+            
+            if HAS_WINPTY:
+                try:
+                    # winpty requires the command-line to be given if cwd is specified
+                    self.winpty_proc = winpty.PtyProcess.spawn(shell, cwd=working_dir)
+                    self.reader_thread = WinPtyReaderThread(self.winpty_proc, self)
+                    self.reader_thread.data_received.connect(self.dataReceived)
+                    self.reader_thread.start()
+                except Exception as e:
+                    self.dataReceived.emit(f"Failed to start winpty: {str(e)}\r\nFallback to basic subprocress...\r\n")
+                    self.winpty_proc = None
+            
+            if not HAS_WINPTY or self.winpty_proc is None:
+                try:
+                    self.subprocess_proc = subprocess.Popen(
+                        shell,
+                        cwd=working_dir,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP') else 0
+                    )
+                    self.reader_thread = SubprocessReaderThread(self.subprocess_proc, self)
+                    self.reader_thread.data_received.connect(self.dataReceived)
+                    self.reader_thread.start()
+                except Exception as e:
+                    self.dataReceived.emit(f"Failed to start terminal subprocess: {str(e)}\r\n")
         else:
-            os.close(slave_fd)
-            flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
-            fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-            self.reader_thread = PtyReaderThread(self.master_fd, self)
-            self.reader_thread.data_received.connect(self.dataReceived)
-            self.reader_thread.start()
+            if not shutil.which(shell):
+                shell = '/bin/sh'
+            
+            self.master_fd, slave_fd = pty.openpty()
+            self.child_pid = os.fork()
+            
+            if self.child_pid == 0:
+                os.close(self.master_fd)
+                os.setsid()
+                fcntl.ioctl(slave_fd, termios.TIOCSCTTY, 0)
+                os.dup2(slave_fd, 0)
+                os.dup2(slave_fd, 1)
+                os.dup2(slave_fd, 2)
+                if slave_fd > 2:
+                    os.close(slave_fd)
+                if working_dir and os.path.isdir(working_dir):
+                    os.chdir(working_dir)
+                os.environ['TERM'] = 'xterm-256color'
+                os.environ['COLORTERM'] = 'truecolor'
+                os.execlp(shell, shell)
+            else:
+                os.close(slave_fd)
+                flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
+                fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+                self.reader_thread = PtyReaderThread(self.master_fd, self)
+                self.reader_thread.data_received.connect(self.dataReceived)
+                self.reader_thread.start()
     
     def stop_shell(self):
         """Stop shell and cleanup"""
-        if self.child_pid:
-            try:
-                os.kill(self.child_pid, signal.SIGTERM)
-            except (OSError, ChildProcessError):
-                pass
-        
-        if self.master_fd is not None:
-            try:
-                os.close(self.master_fd)
-            except OSError:
-                pass
-            self.master_fd = None
+        if IS_WINDOWS:
+            if self.winpty_proc:
+                try:
+                    self.winpty_proc.terminate()
+                except Exception:
+                    pass
+                self.winpty_proc = None
+            
+            if self.subprocess_proc:
+                try:
+                    self.subprocess_proc.terminate()
+                except Exception:
+                    pass
+                self.subprocess_proc = None
+        else:
+            if self.child_pid:
+                try:
+                    os.kill(self.child_pid, signal.SIGTERM)
+                except (OSError, ChildProcessError):
+                    pass
+            
+            if self.master_fd is not None:
+                try:
+                    os.close(self.master_fd)
+                except OSError:
+                    pass
+                self.master_fd = None
+            
+            if self.child_pid:
+                try:
+                    os.waitpid(self.child_pid, os.WNOHANG)
+                except (OSError, ChildProcessError):
+                    pass
+                self.child_pid = None
         
         if self.reader_thread:
             self.reader_thread.stop()
             self.reader_thread.wait(2000)
             self.reader_thread = None
-        
-        if self.child_pid:
-            try:
-                os.waitpid(self.child_pid, os.WNOHANG)
-            except (OSError, ChildProcessError):
-                pass
-            self.child_pid = None
     
     def write_command(self, command: str):
         """Write a command to the shell"""
-        if self.master_fd is not None:
-            os.write(self.master_fd, (command + '\n').encode('utf-8'))
+        cmd_str = command + '\n'
+        if IS_WINDOWS:
+            if self.winpty_proc:
+                try:
+                    self.winpty_proc.write(cmd_str)
+                except Exception:
+                    pass
+            elif self.subprocess_proc:
+                try:
+                    self.subprocess_proc.stdin.write(cmd_str.encode('utf-8'))
+                    self.subprocess_proc.stdin.flush()
+                except Exception:
+                    pass
+        else:
+            if self.master_fd is not None:
+                try:
+                    os.write(self.master_fd, cmd_str.encode('utf-8'))
+                except OSError:
+                    pass
 
 
 def get_xterm_html(font_family: str = "JetBrains Mono", font_size: int = 14, 

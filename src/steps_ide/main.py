@@ -35,6 +35,32 @@ def main():
     app.setApplicationVersion("1.0.0")
     app.setOrganizationName("Steps Language")
     
+    # Set Application Icon
+    from pathlib import Path
+    
+    # Calculate path to the images folder
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller bundled execution path
+        root_dir = Path(sys._MEIPASS)
+    else:
+        # Development execution path relative to this file
+        # main.py -> steps_ide -> src -> Steps
+        root_dir = Path(__file__).resolve().parent.parent.parent
+        
+    icon_path = root_dir / "images" / "steps_simple_256.png"
+    
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
+        
+        # Ensure icon shows up in Windows taskbar
+        if sys.platform == 'win32':
+            import ctypes
+            myappid = 'stepslanguage.stepside.ide.1.0.0'
+            try:
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except Exception:
+                pass
+    
     # Load settings
     settings = SettingsManager()
     

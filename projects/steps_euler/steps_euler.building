@@ -1,29 +1,20 @@
 building: euler
     note: Project Euler — 10 classic mathematical problems solved in Steps.
-    note:
-    note: HOW TO ADD A NEW SOLVED PROBLEM:
-    note:   1. Add its label to the "problems" list below (for the menu)
-    note:   2. Add an "otherwise if" branch in the dispatcher (marked below)
-    note:      above the final "otherwise" catch-all line.
 
-    call divider with "Project Euler — Steps", 52
-    display ""
-    display "         First 10 problems solved in Steps."
-    display ""
-
-    note: ── Problem list for the menu ──────────────────────────────────────
-    note: ADD NEW PROBLEM LABELS HERE (keep in order, one entry per problem)
     set problems to ["Multiples of 3 or 5", "Even Fibonacci Numbers", "Largest Prime Factor", "Largest Palindrome Product", "Smallest Multiple", "Sum Square Difference",  "10001st Prime", "Largest Product in a Series", "Special Pythagorean Triplet", "Summation of Primes"]
-    note: ─────────────────────────────────────────────────────────────────
-
     set running to true
-
+    
     repeat while running
+        clear console
+        call divider with "Project Euler — Steps", 52
+        display ""
+        display "         First 10 problems solved in Steps."
+        display ""
         call divider with "Solved Problems", 52
         display ""
         call menu with problems
         display ""
-        display "Enter a problem number (0 to quit): "
+        display "Enter a problem number to see the solution (0 to quit): "
         set choice to input
         display ""
 
@@ -31,6 +22,7 @@ building: euler
             set running to false
 
         otherwise if choice equals "1"
+            clear console
             call divider with "Problem 001 — Multiples of 3 or 5", 52
             display ""
             attempt:
@@ -40,6 +32,7 @@ building: euler
             display ""
             
         otherwise if choice equals "2"
+            clear console
             call divider with "Problem 002 — Even Fibonacci Numbers", 52
             display ""
             attempt:
@@ -49,6 +42,7 @@ building: euler
             display ""
             
         otherwise if choice equals "3"
+            clear console
             call divider with "Problem 03 — Largest Prime Factor", 52
             display ""
             attempt:
@@ -58,6 +52,7 @@ building: euler
             display ""
             
         otherwise if choice equals "4"
+            clear console
             call divider with "Problem 04 — Largest Palindrome Product", 52
             display ""
             attempt:
@@ -67,6 +62,7 @@ building: euler
             display ""
             
         otherwise if choice equals "5"
+            clear console
             call divider with "Problem 05 — Smallest Multiple", 52
             display ""
             attempt:
@@ -76,6 +72,7 @@ building: euler
             display ""
             
         otherwise if choice equals "6"
+            clear console
             call divider with "Problem 06 — Sum Square Difference", 52
             display ""
             attempt:
@@ -85,6 +82,7 @@ building: euler
             display ""
             
         otherwise if choice equals "7"
+            clear console
             call divider with "Problem 07 — 10001st Prime", 52
             display ""
             attempt:
@@ -94,6 +92,7 @@ building: euler
             display ""
             
         otherwise if choice equals "8"
+            clear console
             call divider with "Problem 08 — Even Fibonacci Numbers", 52
             display ""
             attempt:
@@ -103,6 +102,7 @@ building: euler
             display ""
             
         otherwise if choice equals "9"
+            clear console
             call divider with "Problem 09 — Special Pythagorean Triplet", 52
             display ""
             attempt:
@@ -112,6 +112,7 @@ building: euler
             display ""
             
         otherwise if choice equals "10"
+            clear console
             call divider with "Problem 10 — Summation of Primes", 52
             display ""
             attempt:
@@ -123,6 +124,8 @@ building: euler
         otherwise
             display "Problem " added to choice added to " has not been solved yet."
             display ""
+        display "Press ENTER to continue..."
+        set dummy to input
 
     call divider with "Goodbye!", 52
     display ""

@@ -34,12 +34,12 @@ if errorlevel 1 (
 )
 
 REM Upgrade pip
-echo Upgrading pip...
-python -m pip install --upgrade pip
-if errorlevel 1 (
-    echo Failed to upgrade pip
-    exit /b 1
-)
+echo Skipping pip upgrade to avoid Windows file lock errors...
+REM python -m pip install --upgrade pip
+REM if errorlevel 1 (
+REM     echo Failed to upgrade pip
+REM     exit /b 1
+REM )
 
 REM Install the Steps package in editable mode
 echo Installing Steps package...
