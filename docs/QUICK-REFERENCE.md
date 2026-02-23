@@ -84,6 +84,10 @@ remove 3 from numbers
 set len to length of numbers
 if 5 is in numbers
     display "Found it"
+
+# Create a pre-filled list at C speed (native builtin)
+call create_list with 1000, 0 storing result in counters   # 1000 zeros
+call create_list with 500, true storing result in flags    # 500 trues
 ```
 
 ### Tables (Dictionaries)

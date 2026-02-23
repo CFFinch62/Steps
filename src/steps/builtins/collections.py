@@ -191,6 +191,48 @@ def table_set(
     )
 
 
+def list_create(
+    size: StepsValue,
+    value: StepsValue,
+    location: Optional[SourceLocation] = None
+) -> StepsList:
+    """Create a list of a given size filled with a single value.
+
+    This is a native builtin so the allocation happens at C speed inside
+    Python rather than through thousands of interpreted loop iterations.
+
+    Args:
+        size:  Number of elements (must be a non-negative number)
+        value: The value to fill every slot with
+
+    Returns:
+        A new StepsList with *size* copies of *value*
+    """
+    if not isinstance(size, StepsNumber):
+        raise StepsTypeError(
+            code=ErrorCode.E302,
+            message=f"create_list size must be a number, got {size.type_name()}.",
+            file=location.file if location else None,
+            line=location.line if location else 0,
+            column=location.column if location else 0,
+            hint="Use: call create_list with 100, true storing result in my_list"
+        )
+
+    n = int(size.value)
+    if n < 0:
+        raise StepsRuntimeError(
+            code=ErrorCode.E301,
+            message=f"create_list size must be >= 0, got {n}.",
+            file=location.file if location else None,
+            line=location.line if location else 0,
+            column=location.column if location else 0,
+            hint="Size must be a non-negative number."
+        )
+
+    # Python list multiplication is a C-level operation — this is the whole point.
+    return StepsList([value] * n)
+
+
 def table_has_key(
     table: StepsValue, 
     key: StepsValue,

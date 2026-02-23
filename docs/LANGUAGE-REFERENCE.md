@@ -1157,6 +1157,17 @@ Steps includes a bundled standard library that's automatically available to all 
 |----------|---------|-------------|
 | `%` | `modulo` | Remainder after division |
 
+### List Creation (Native)
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `create_list` | `size, value` | `list` | Create a list of `size` elements all set to `value` |
+
+```steps
+call create_list with 10, 0 storing result in counters    # [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+call create_list with 5, true storing result in flags     # [true, true, true, true, true]
+```
+
 ### List Math (Native)
 
 | Function | Parameters | Returns | Description |

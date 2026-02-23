@@ -29,7 +29,7 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch='x86_64',
+    target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
     icon=['images/Steps.png'],
@@ -42,10 +42,4 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='StepsIDE',
-)
-app = BUNDLE(
-    coll,
-    name='StepsIDE.app',
-    icon='images/Steps.png',
-    bundle_identifier='com.steps.stepsIDE',
 )

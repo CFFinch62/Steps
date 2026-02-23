@@ -38,8 +38,29 @@ pip install PyQt6 PyQt6-WebEngine --quiet
 echo ""
 echo "🧹 Cleaning previous mac-intel builds..."
 rm -rf "$DIST_DIR" "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
+
+# ── Generate .icns icon (macOS requires .icns, not .png) ─────
+echo ""
+echo "🎨 Generating macOS icon (Steps.icns)..."
+ICONSET_DIR="$BUILD_DIR/Steps.iconset"
+ICNS_FILE="$PROJECT_ROOT/images/Steps.icns"
+mkdir -p "$ICONSET_DIR"
+sips -z 16   16   "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_16x16.png"    > /dev/null
+sips -z 32   32   "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_16x16@2x.png" > /dev/null
+sips -z 32   32   "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_32x32.png"    > /dev/null
+sips -z 64   64   "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_32x32@2x.png" > /dev/null
+sips -z 128  128  "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_128x128.png"  > /dev/null
+sips -z 256  256  "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_128x128@2x.png" > /dev/null
+sips -z 256  256  "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_256x256.png"  > /dev/null
+sips -z 512  512  "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_256x256@2x.png" > /dev/null
+sips -z 512  512  "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_512x512.png"  > /dev/null
+sips -z 1024 1024 "$PROJECT_ROOT/images/Steps.png" --out "$ICONSET_DIR/icon_512x512@2x.png" > /dev/null
+iconutil -c icns "$ICONSET_DIR" --output "$ICNS_FILE"
+echo "✓ Steps.icns created at images/Steps.icns"
 
 # ── PyInstaller ──────────────────────────────────────────────
+echo ""
 echo "📦 Installing PyInstaller..."
 pip install pyinstaller --quiet
 
@@ -51,7 +72,7 @@ pyinstaller --name="StepsIDE" \
             --noconsole \
             --clean \
             --noconfirm \
-            --icon="images/Steps.png" \
+            --icon="$ICNS_FILE" \
             --distpath "$DIST_DIR" \
             --workpath "$BUILD_DIR" \
             --add-data "src/steps/stdlib:steps/stdlib" \

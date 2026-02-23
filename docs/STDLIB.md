@@ -151,6 +151,30 @@ repeat for each char in chars
 
 ---
 
+## List Creation (Native)
+
+Create a pre-filled list of a given size in a single call. This is a **native** builtin — allocation happens at C speed inside Python, making it far faster than building the same list with a `repeat while` loop.
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `create_list` | `size as number, value as any` | `list` | Create a list of `size` elements all set to `value` |
+
+```steps
+note: Create a list of 10 zeros
+call create_list with 10, 0 storing result in counters
+
+note: Create a boolean sieve for prime-finding (much faster than a loop)
+call create_list with 2000001, true storing result in sieve
+
+note: Pre-fill a list of empty text
+call create_list with 5, "" storing result in labels
+```
+
+> **Why use this instead of a loop?**
+> A `repeat while` loop building a list of one million entries passes every iteration through the Steps interpreter — scope lookups, type dispatch, and object allocation on every step. `create_list` hands the whole job to Python's C-level list multiplication (`[value] * n`), which completes in milliseconds regardless of size.
+
+---
+
 ## List Math (Native)
 
 Aggregate functions that work on a **list of numbers**.

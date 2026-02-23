@@ -293,9 +293,17 @@ class QuickReferenceDialog(QDialog):
     def _load_content(self):
         """Load the quick reference markdown file"""
         try:
-            # Find the quick reference file
-            quick_ref_path = Path(__file__).parent.parent.parent.parent / "docs" / "QUICK-REFERENCE.md"
-            
+            # Resolve base path for both frozen (.app bundle) and development environments.
+            # When frozen by PyInstaller, __file__-relative paths don't work because the
+            # directory structure inside the bundle is different.  All --add-data files land
+            # directly under sys._MEIPASS, so we must use that as the base.
+            if getattr(sys, 'frozen', False):
+                base_path = Path(sys._MEIPASS)   # type: ignore[attr-defined]
+            else:
+                base_path = Path(__file__).parent.parent.parent.parent
+
+            quick_ref_path = base_path / "docs" / "QUICK-REFERENCE.md"
+
             if quick_ref_path.exists():
                 content = quick_ref_path.read_text(encoding='utf-8')
                 # Convert markdown to HTML for better rendering

@@ -10,13 +10,11 @@ step: gen_primes_to_n
 
         declare:
             primes_sieve as list
-            index as number
 
         do:
-            set index to 0
-            repeat while index is less than or equal to size
-                add true to primes_sieve
-                set index to index + 1
+            note: create_list is a native builtin - allocates at C speed,
+            note: replacing a 2,000,000-iteration interpreted loop with one call.
+            call create_list with size + 1, true storing result in primes_sieve
             return primes_sieve
 
     declare:

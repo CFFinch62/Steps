@@ -15,6 +15,7 @@ from .tui import (
     tui_pad_text, tui_progress_bar
 )
 from .list_math import list_min, list_max, list_sum
+from .collections import list_create
 from .datetime_functions import time_now, date_today, date_diff
 from .math_functions import (
     math_square, math_sqrt, math_pow, math_pi,
@@ -113,6 +114,11 @@ NATIVE_FUNCTIONS = {
     "progress_bar": {
         "function": tui_progress_bar,
         "params": ["current", "total", "width"],
+    },
+    # List creation
+    "create_list": {
+        "function": list_create,
+        "params": ["size", "value"],
     },
     # List aggregate functions
     "list_min": {
