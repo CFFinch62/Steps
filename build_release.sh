@@ -43,6 +43,7 @@ pyinstaller --name="StepsIDE" \
             --add-data "src/steps/stdlib:steps/stdlib" \
             --add-data "docs/QUICK-REFERENCE.md:docs" \
             --add-data "images:images" \
+            --hidden-import "PyQt6.sip" \
             --hidden-import "PyQt6.QtWebEngineCore" \
             --hidden-import "PyQt6.QtWebEngineWidgets" \
             src/steps_ide/main.py

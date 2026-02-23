@@ -29,7 +29,7 @@ STEPS_CONTROL_KEYWORDS = [
 
 # Steps variable/assignment keywords
 STEPS_VAR_KEYWORDS = [
-    'set', 'to', 'as', 'fixed', 'from'
+    'set', 'to', 'as', 'fixed', 'from', 'iteration', 'limit'
 ]
 
 # Steps function keywords
@@ -37,9 +37,10 @@ STEPS_FUNCTION_KEYWORDS = [
     'call', 'with', 'return', 'storing result in'
 ]
 
-# Steps builtin functions
+# Steps builtin functions (multi-word entries must come before single-word)
 STEPS_BUILTINS = [
-    'display', 'input'
+    'clear console',
+    'display', 'indicate', 'input'
 ]
 
 # Steps list operations
@@ -62,14 +63,20 @@ STEPS_BOOL_OPERATORS = [
     'and', 'or', 'not'
 ]
 
-# Steps multi-word comparison operators
+# Steps multi-word comparison / expression operators
 STEPS_COMPARISON_OPERATORS = [
     'is greater than or equal to',
     'is less than or equal to',
     'is not equal to',
     'is greater than',
     'is less than',
+    'is a boolean',
+    'is a number',
+    'is a table',
+    'is a list',
+    'is a text',
     'is equal to',
+    'type of',
     'length of',
     'added to',
     'starts with',
@@ -238,9 +245,10 @@ class StepsHighlighter(QSyntaxHighlighter):
         for kw in STEPS_LIST_KEYWORDS:
             self._rules.append((QRegularExpression(r'\b' + kw + r'\b'), 'keyword'))
         
-        # Built-in functions
+        # Built-in functions (multi-word entries use \s+ so they match before single words)
         for fn in STEPS_BUILTINS:
-            self._rules.append((QRegularExpression(r'\b' + fn + r'\b'), 'builtin'))
+            pattern = r'\b' + fn.replace(' ', r'\s+') + r'\b'
+            self._rules.append((QRegularExpression(pattern), 'builtin'))
         
         # Types
         for t in STEPS_TYPES:
