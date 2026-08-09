@@ -18,6 +18,7 @@ from .ast_nodes import (
     ReturnStatement, ExitStatement, IfStatement, IfBranch,
     RepeatTimesStatement, RepeatForEachStatement, RepeatWhileStatement,
     AttemptStatement, NoteStatement, AddToListStatement, RemoveFromListStatement,
+    IndicateStatement, ClearConsoleStatement, SetIterationLimitStatement,
     # Expression nodes
     ExpressionNode, NumberLiteral, TextLiteral, BooleanLiteral, NothingLiteral,
     ListLiteral, TableLiteral, IdentifierNode, InputNode,
@@ -84,10 +85,63 @@ class Interpreter:
         """
         self.env = environment or Environment()
         self.output_lines: List[str] = []
-        
+
         # Override output handler to capture output
         self._original_output = self.env.output_handler
         self.env.output_handler = self._capture_output
+
+        # Dispatch tables keyed by exact node type (type(node), not
+        # isinstance) so execute_statement/evaluate_expression below are a
+        # single dict lookup instead of a long if/isinstance chain. AST
+        # nodes derive from ASTNode(ABC), so isinstance() against them was
+        # going through abc.__instancecheck__ on every check - profiling a
+        # hot loop showed the chain (isinstance + ABC machinery combined)
+        # was over half of total interpreter runtime. Built once here since
+        # both tables only depend on bound methods, not per-run state.
+        self._stmt_dispatch = {
+            DisplayStatement: self._exec_display,
+            IndicateStatement: self._exec_indicate,
+            ClearConsoleStatement: self._exec_clear_console,
+            SetIterationLimitStatement: self._exec_set_iteration_limit,
+            SetStatement: self._exec_set,
+            SetIndexStatement: self._exec_set_index,
+            CallStatement: self._exec_call,
+            ReturnStatement: self._exec_return,
+            ExitStatement: self._exec_exit,
+            IfStatement: self._exec_if,
+            RepeatTimesStatement: self._exec_repeat_times,
+            RepeatForEachStatement: self._exec_repeat_for_each,
+            RepeatWhileStatement: self._exec_repeat_while,
+            AttemptStatement: self._exec_attempt,
+            AddToListStatement: self._exec_add_to_list,
+            RemoveFromListStatement: self._exec_remove_from_list,
+            NoteStatement: lambda stmt: None,
+        }
+        self._expr_dispatch = {
+            NumberLiteral: lambda expr: StepsNumber(expr.value),
+            TextLiteral: lambda expr: StepsText(expr.value),
+            BooleanLiteral: lambda expr: StepsBoolean(expr.value),
+            NothingLiteral: lambda expr: StepsNothing(),
+            ListLiteral: self._eval_list_literal,
+            TableLiteral: self._eval_table_literal,
+            IdentifierNode: lambda expr: self.env.get_variable(expr.name, expr.location),
+            InputNode: lambda expr: StepsText(self.env.read_input()),
+            BinaryOpNode: self._eval_binary_op,
+            UnaryOpNode: self._eval_unary_op,
+            TypeConversionNode: self._eval_type_conversion,
+            TypeOfNode: self._eval_type_of,
+            TypeCheckNode: self._eval_type_check,
+            FormatNumberNode: self._eval_format_number,
+            TableAccessNode: self._eval_table_access,
+            AddedToNode: self._eval_added_to,
+            SplitByNode: self._eval_split_by,
+            CharacterAtNode: self._eval_character_at,
+            LengthOfNode: self._eval_length_of,
+            ContainsNode: self._eval_contains,
+            StartsWithNode: self._eval_starts_with,
+            EndsWithNode: self._eval_ends_with,
+            IsInNode: self._eval_is_in,
+        }
     
     def _capture_output(self, message: str) -> None:
         """Capture output for testing and also send to original handler."""
@@ -253,43 +307,8 @@ class Interpreter:
     
     def execute_statement(self, stmt: StatementNode) -> None:
         """Execute a statement."""
-        from .ast_nodes import IndicateStatement, ClearConsoleStatement, SetIterationLimitStatement
-
-        if isinstance(stmt, DisplayStatement):
-            self._exec_display(stmt)
-        elif isinstance(stmt, IndicateStatement):
-            self._exec_indicate(stmt)
-        elif isinstance(stmt, ClearConsoleStatement):
-            self._exec_clear_console(stmt)
-        elif isinstance(stmt, SetIterationLimitStatement):
-            self._exec_set_iteration_limit(stmt)
-        elif isinstance(stmt, SetStatement):
-            self._exec_set(stmt)
-        elif isinstance(stmt, SetIndexStatement):
-            self._exec_set_index(stmt)
-        elif isinstance(stmt, CallStatement):
-            self._exec_call(stmt)
-        elif isinstance(stmt, ReturnStatement):
-            self._exec_return(stmt)
-        elif isinstance(stmt, ExitStatement):
-            self._exec_exit(stmt)
-        elif isinstance(stmt, IfStatement):
-            self._exec_if(stmt)
-        elif isinstance(stmt, RepeatTimesStatement):
-            self._exec_repeat_times(stmt)
-        elif isinstance(stmt, RepeatForEachStatement):
-            self._exec_repeat_for_each(stmt)
-        elif isinstance(stmt, RepeatWhileStatement):
-            self._exec_repeat_while(stmt)
-        elif isinstance(stmt, AttemptStatement):
-            self._exec_attempt(stmt)
-        elif isinstance(stmt, AddToListStatement):
-            self._exec_add_to_list(stmt)
-        elif isinstance(stmt, RemoveFromListStatement):
-            self._exec_remove_from_list(stmt)
-        elif isinstance(stmt, NoteStatement):
-            pass  # Notes are comments, do nothing
-        else:
+        handler = self._stmt_dispatch.get(type(stmt))
+        if handler is None:
             raise StepsRuntimeError(
                 code=ErrorCode.E407,
                 message=f"Unknown statement type: {type(stmt).__name__}",
@@ -298,6 +317,7 @@ class Interpreter:
                 column=stmt.location.column,
                 hint="This is likely a bug in the Steps interpreter."
             )
+        handler(stmt)
     
     def _exec_display(self, stmt: DisplayStatement) -> None:
         """Execute: display expression"""
@@ -579,118 +599,73 @@ class Interpreter:
     
     def evaluate_expression(self, expr: ExpressionNode) -> StepsValue:
         """Evaluate an expression and return its value."""
-        # Literals
-        if isinstance(expr, NumberLiteral):
-            return StepsNumber(expr.value)
-        
-        if isinstance(expr, TextLiteral):
-            return StepsText(expr.value)
-        
-        if isinstance(expr, BooleanLiteral):
-            return StepsBoolean(expr.value)
-        
-        if isinstance(expr, NothingLiteral):
-            return StepsNothing()
-        
-        if isinstance(expr, ListLiteral):
-            elements = [self.evaluate_expression(e) for e in expr.elements]
-            return StepsList(elements)
-        
-        if isinstance(expr, TableLiteral):
-            pairs = {}
-            for key_expr, value_expr in expr.pairs:
-                key = self.evaluate_expression(key_expr).as_text().value
-                value = self.evaluate_expression(value_expr)
-                pairs[key] = value
-            return StepsTable(pairs)
-        
-        # References
-        if isinstance(expr, IdentifierNode):
-            return self.env.get_variable(expr.name, expr.location)
-        
-        if isinstance(expr, InputNode):
-            text = self.env.read_input()
-            return StepsText(text)
-        
-        # Binary operations
-        if isinstance(expr, BinaryOpNode):
-            return self._eval_binary_op(expr)
-        
-        # Unary operations
-        if isinstance(expr, UnaryOpNode):
-            return self._eval_unary_op(expr)
-        
-        # Type conversion
-        if isinstance(expr, TypeConversionNode):
-            return self._eval_type_conversion(expr)
-        
-        # Type of expression
-        if isinstance(expr, TypeOfNode):
-            return self._eval_type_of(expr)
-        
-        # Type check expression
-        if isinstance(expr, TypeCheckNode):
-            return self._eval_type_check(expr)
-        
-        # Number formatting
-        if isinstance(expr, FormatNumberNode):
-            value = self.evaluate_expression(expr.expression)
-            places = self.evaluate_expression(expr.decimal_places)
-            return builtins.format_number_string(value, places)
-        
-        # Collection access
-        if isinstance(expr, TableAccessNode):
-            return self._eval_table_access(expr)
+        handler = self._expr_dispatch.get(type(expr))
+        if handler is None:
+            raise StepsRuntimeError(
+                code=ErrorCode.E407,
+                message=f"Unknown expression type: {type(expr).__name__}",
+                file=expr.location.file,
+                line=expr.location.line,
+                column=expr.location.column,
+                hint="This is likely a bug in the Steps interpreter."
+            )
+        return handler(expr)
 
-        
-        # Text operations
-        if isinstance(expr, AddedToNode):
-            left = self.evaluate_expression(expr.left)
-            right = self.evaluate_expression(expr.right)
-            return builtins.text_concatenate(left, right, expr.location)
-        
-        if isinstance(expr, SplitByNode):
-            split_text = self.evaluate_expression(expr.text)
-            delimiter = self.evaluate_expression(expr.delimiter)
-            return builtins.text_split(split_text, delimiter, expr.location)
+    def _eval_list_literal(self, expr: ListLiteral) -> StepsValue:
+        elements = [self.evaluate_expression(e) for e in expr.elements]
+        return StepsList(elements)
 
-        if isinstance(expr, CharacterAtNode):
-            char_text = self.evaluate_expression(expr.text)
-            index = self.evaluate_expression(expr.index)
-            return builtins.text_character_at(char_text, index, expr.location)
+    def _eval_table_literal(self, expr: TableLiteral) -> StepsValue:
+        pairs = {}
+        for key_expr, value_expr in expr.pairs:
+            key = self.evaluate_expression(key_expr).as_text().value
+            value = self.evaluate_expression(value_expr)
+            pairs[key] = value
+        return StepsTable(pairs)
 
-        if isinstance(expr, LengthOfNode):
-            len_collection = self.evaluate_expression(expr.collection)
-            return builtins.text_length(len_collection, expr.location)
+    def _eval_format_number(self, expr: FormatNumberNode) -> StepsValue:
+        value = self.evaluate_expression(expr.expression)
+        places = self.evaluate_expression(expr.decimal_places)
+        return builtins.format_number_string(value, places)
 
-        if isinstance(expr, ContainsNode):
-            contains_text = self.evaluate_expression(expr.text)
-            substring = self.evaluate_expression(expr.substring)
-            return builtins.text_contains(contains_text, substring, expr.location)
+    def _eval_added_to(self, expr: AddedToNode) -> StepsValue:
+        left = self.evaluate_expression(expr.left)
+        right = self.evaluate_expression(expr.right)
+        return builtins.text_concatenate(left, right, expr.location)
 
-        if isinstance(expr, StartsWithNode):
-            starts_text = self.evaluate_expression(expr.text)
-            prefix = self.evaluate_expression(expr.prefix)
-            return builtins.text_starts_with(starts_text, prefix, expr.location)
+    def _eval_split_by(self, expr: SplitByNode) -> StepsValue:
+        split_text = self.evaluate_expression(expr.text)
+        delimiter = self.evaluate_expression(expr.delimiter)
+        return builtins.text_split(split_text, delimiter, expr.location)
 
-        if isinstance(expr, EndsWithNode):
-            ends_text = self.evaluate_expression(expr.text)
-            suffix = self.evaluate_expression(expr.suffix)
-            return builtins.text_ends_with(ends_text, suffix, expr.location)
-        
-        if isinstance(expr, IsInNode):
-            item = self.evaluate_expression(expr.item)
-            collection = self.evaluate_expression(expr.collection)
-            return builtins.list_contains(collection, item, expr.location)
-        
-        raise StepsRuntimeError(
-            code=ErrorCode.E407,
-            message=f"Unknown expression type: {type(expr).__name__}",
-            file=expr.location.file,
-            line=expr.location.line,
-            column=expr.location.column,
-            hint="This is likely a bug in the Steps interpreter."
-        )
+    def _eval_character_at(self, expr: CharacterAtNode) -> StepsValue:
+        char_text = self.evaluate_expression(expr.text)
+        index = self.evaluate_expression(expr.index)
+        return builtins.text_character_at(char_text, index, expr.location)
+
+    def _eval_length_of(self, expr: LengthOfNode) -> StepsValue:
+        len_collection = self.evaluate_expression(expr.collection)
+        return builtins.text_length(len_collection, expr.location)
+
+    def _eval_contains(self, expr: ContainsNode) -> StepsValue:
+        contains_text = self.evaluate_expression(expr.text)
+        substring = self.evaluate_expression(expr.substring)
+        return builtins.text_contains(contains_text, substring, expr.location)
+
+    def _eval_starts_with(self, expr: StartsWithNode) -> StepsValue:
+        starts_text = self.evaluate_expression(expr.text)
+        prefix = self.evaluate_expression(expr.prefix)
+        return builtins.text_starts_with(starts_text, prefix, expr.location)
+
+    def _eval_ends_with(self, expr: EndsWithNode) -> StepsValue:
+        ends_text = self.evaluate_expression(expr.text)
+        suffix = self.evaluate_expression(expr.suffix)
+        return builtins.text_ends_with(ends_text, suffix, expr.location)
+
+    def _eval_is_in(self, expr: IsInNode) -> StepsValue:
+        item = self.evaluate_expression(expr.item)
+        collection = self.evaluate_expression(expr.collection)
+        return builtins.list_contains(collection, item, expr.location)
     
     def _eval_binary_op(self, expr: BinaryOpNode) -> StepsValue:
         """Evaluate a binary operation."""
