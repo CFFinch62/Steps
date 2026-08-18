@@ -68,7 +68,7 @@ from ..ast_nodes import (
     DisplayStatement, SetStatement, SetIndexStatement, CallStatement,
     ReturnStatement, ExitStatement, IfStatement,
     RepeatWhileStatement, NoteStatement, AddToListStatement,
-    RemoveFromListStatement,
+    RemoveFromListStatement, SetIterationLimitStatement,
     NumberLiteral, TextLiteral, BooleanLiteral, NothingLiteral, ListLiteral,
     IdentifierNode, BinaryOpNode, UnaryOpNode, TypeConversionNode,
     TableAccessNode, AddedToNode, LengthOfNode,
@@ -199,6 +199,17 @@ class VMCompiler:
         t = type(stmt)
 
         if t is NoteStatement:
+            return
+        if t is SetIterationLimitStatement:
+            # This engine doesn't enforce repeat while's iteration-limit
+            # safety guard at all yet (see the module docstring's known-
+            # limitations note) - "set iteration limit to N" configures a
+            # guard that isn't there, so it's a safe no-op rather than an
+            # unsupported construct. Still evaluated for side-effect
+            # parity (the limit expression could, in principle, call a
+            # step) even though its value is discarded.
+            self._compile_expr(stmt.limit)
+            self.chunk.emit(Op.POP_TOP)
             return
         if t is DisplayStatement:
             self._compile_expr(stmt.expression)
