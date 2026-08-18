@@ -179,12 +179,63 @@ step: apply_discount
 
 | Command                               | Description                                                     |
 | ------------------------------------- | --------------------------------------------------------------- |
-| `python -m STEPS.main run <path>`     | Run a STEPS project                                             |
-| `python -m STEPS.main check <path>`   | Validate syntax without running                                 |
-| `python -m STEPS.main repl`           | Start the interactive REPL                                      |
-| `python -m STEPS.main diagram <path>` | Generate ASCII flow diagram (also available in IDE with Ctrl+D) |
-| `python -m STEPS_repl.main`           | Start REPL directly                                             |
-| `python -m STEPS_ide.main`            | Launch the STEPS IDE                                            |
+| `python -m steps.main run <path>`     | Run a STEPS project                                             |
+| `python -m steps.main check <path>`   | Validate syntax without running                                 |
+| `python -m steps.main repl`           | Start the interactive REPL                                      |
+| `python -m steps.main diagram <path>` | Generate ASCII flow diagram (also available in IDE with Ctrl+D) |
+| `python -m steps_repl.main`           | Start REPL directly                                             |
+| `python -m steps_ide.main`            | Launch the STEPS IDE                                            |
+
+---
+
+## ⚡ NucleusVM Execution Engine (Experimental)
+
+STEPS can also run projects by compiling them to bytecode for
+[NucleusVM](../NucleusVM), a shared VM built to give this and other
+Python-hosted teaching languages a faster execution path than
+tree-walking, instead of interpreting the AST directly. It's opt-in and
+additive — the tree-walking interpreter remains the default and is
+untouched by this.
+
+```bash
+python -m steps.main run --engine vm my_project/
+```
+
+```python
+from steps.main import run_project
+
+run_project("my_project/", engine="vm")  # engine="tree" is the default
+```
+
+**Status**: a first vertical slice, not the full language yet. It covers
+`repeat while` (the dominant loop — 99 of the sibling `PROJECT_EULER`
+project's 100 STEPS Project Euler solutions use it), `if`/`otherwise`/
+`otherwise if`, `exit`, `return`, `call` for steps/risers/the built-ins
+real usage showed matter (`create_list`, `characters`, `slice`, `sqrt`,
+`index_of`, `read_file`, `replace`, `list_sum`, `sqr`, `pow`, `log10`,
+`log`), lists, `set`/indexed `set`, arithmetic/comparison/boolean
+operators, `as number`/`as text`/`as boolean`, `length of`, `added to`,
+`split by`/`character at`/`contains`/`is in`, `display`, and dynamic
+scoping end to end. `attempt`/`unsuccessful`, tables, `repeat for each`,
+`repeat <N> times`, and `fixed` type-locking aren't implemented yet (all
+confirmed 0 or negligible real usage across the same 100 solutions) — an
+unsupported construct raises a clear `NotImplementedError` at compile
+time rather than running incorrectly. The iteration-limit safety guard
+`repeat while` has under the tree-walker (`set iteration limit to`)
+isn't enforced by this engine yet either.
+
+**Verified**: every one of the 100 Project Euler solutions that completes
+within a practical time budget under the tree-walker produces
+byte-identical output under the VM engine too (0 divergences found).
+**Measured faster**, not just architecturally different: ~3.1x on
+call-heavy recursive code, ~46% on loop-heavy arithmetic/comparison code
+(the shape most Project Euler solutions actually take) — achieved on the
+first implementation pass, no separate optimization work needed, since
+this slice's operators already compile to raw VM instructions rather than
+native-function calls. See NucleusVM's `PROGRESS.md` for the full
+investigation, including a real dynamic-scoping gap in NucleusVM's shared
+core (STEPS is the first language to actually exercise it) that was
+caught and fixed before this engine's compiler was even written.
 
 ---
 

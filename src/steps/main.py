@@ -60,7 +60,14 @@ def run_project(project_path: str, engine: str = "tree") -> int:
 
     if engine == "vm":
         from steps.vm_compiler import run_building_vm
-        run_building_vm(building, environment)
+        try:
+            run_building_vm(building, environment)
+        except NotImplementedError as e:
+            print(f"steps: --engine vm doesn't support this program yet: {e}", file=sys.stderr)
+            return 1
+        except Exception as e:
+            print(f"steps: internal error: {e}", file=sys.stderr)
+            return 1
         return 0
 
     # Run the program
@@ -341,6 +348,17 @@ def main() -> int:
     # run command
     run_parser = subparsers.add_parser("run", help="Run a Steps project")
     run_parser.add_argument("path", help="Path to the project directory")
+    run_parser.add_argument(
+        "--engine", choices=["tree", "vm"], default="tree",
+        help="execution engine: 'tree' (default) is the original tree-walking "
+             "interpreter; 'vm' compiles to NucleusVM bytecode instead — "
+             "currently a first vertical slice, not the full language (an "
+             "unsupported construct raises a clear error rather than running "
+             "incorrectly), and does not yet enforce the iteration-limit "
+             "safety guard 'repeat while' has under the tree-walker. See the "
+             "README's 'NucleusVM execution engine' section for what's "
+             "covered and current performance.",
+    )
 
     # check command
     check_parser = subparsers.add_parser("check", help="Validate a Steps project")
@@ -361,7 +379,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "run":
-        return run_project(args.path)
+        return run_project(args.path, engine=args.engine)
     elif args.command == "check":
         return check_project(args.path)
     elif args.command == "repl":
