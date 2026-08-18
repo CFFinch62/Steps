@@ -19,47 +19,58 @@ from steps.interpreter import run_building, ExecutionResult
 from steps.errors import StepsError
 
 
-def run_project(project_path: str) -> int:
+def run_project(project_path: str, engine: str = "tree") -> int:
     """Run a Steps project.
-    
+
     Args:
         project_path: Path to the project directory
-    
+        engine: "tree" (default, the tree-walking interpreter) or "vm" —
+            compiles to NucleusVM bytecode instead (see `vm_compiler/`;
+            currently a first vertical slice, not the full language —
+            unsupported constructs raise NotImplementedError at compile
+            time). Nothing about the default behavior changes when this
+            is left unset.
+
     Returns:
         Exit code (0 for success, 1 for error)
     """
     path = Path(project_path)
-    
+
     if not path.exists():
         print(f"Error: Path '{project_path}' does not exist.", file=sys.stderr)
         return 1
-    
+
     if not path.is_dir():
         print(f"Error: '{project_path}' is not a directory.", file=sys.stderr)
         print("Steps projects must be directories containing a .building file.", file=sys.stderr)
         return 1
-    
+
     # Load the project
     building, environment, errors = load_project(path)
-    
+
     if errors:
         print(f"Found {len(errors)} error(s) loading project:", file=sys.stderr)
         for error in errors:
             _print_error(error)
         return 1
-    
+
     if building is None:
         print("Error: No building found in project.", file=sys.stderr)
         return 1
-    
+
+    if engine == "vm":
+        from steps.vm_compiler import run_building_vm
+        run_building_vm(building, environment)
+        return 0
+
     # Run the program
     result = run_building(building, environment)
-    
+
     if not result.success:
         if result.error:
             _print_error(result.error)
         return 1
-    
+
     return 0
 
 
