@@ -52,9 +52,6 @@ step: draw_display
             return ok
 
     do:
-        note: Clear the screen
-        clear console
-
         note: ── Title banner ──
         call move_cursor with 1, 1
         call set_color with 255, 210, 55
