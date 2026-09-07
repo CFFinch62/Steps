@@ -42,12 +42,24 @@ cd STEPS
 python3 -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 
-# Install in development mode
-pip install -e ".[dev]"
-
-# Install IDE dependencies
-pip install textual watchfiles
+# The full local setup — CLI, the PyQt6 IDE, and serial support
+./setup.sh
 ```
+
+`./setup.sh` is the one-command path and installs everything below. If you
+prefer to do it by hand, pick what you need:
+
+```bash
+pip install -e .                   # CLI only — steps run / check / repl
+pip install -e ".[ide]"            # + the PyQt6 desktop IDE (steps-ide)
+pip install -e ".[ide,serial]"     # + pyserial, for the instruments projects
+pip install -e ".[dev]"            # + pytest, mypy, black, isort
+```
+
+The base install pulls in **no third-party packages at all** — the language
+core is standard library only, so `steps run` works on a bare checkout without
+downloading Qt. The extras are additive; `steps-ide` tells you which one to
+install if you run it without PyQt6.
 
 ---
 

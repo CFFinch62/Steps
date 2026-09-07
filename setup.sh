@@ -27,24 +27,19 @@ source "$VENV_DIR/bin/activate"
 echo "⬆️  Upgrading pip..."
 pip install --upgrade pip
 
-# Install the Steps package in editable mode
-echo "📥 Installing Steps package..."
-pip install -e .
-
-# Install IDE dependencies
-echo "📥 Installing IDE dependencies (PyQt6, PyQt6-WebEngine)..."
-pip install PyQt6 PyQt6-WebEngine
-
-# Install serial port support
-echo "📥 Installing serial port support (pyserial)..."
-pip install pyserial
+# Install the Steps package in editable mode, with the IDE and serial extras.
+# This is the full local setup: everything ./run.sh needs to launch the IDE.
+# (A plain `pip install -e .` installs the CLI alone -- no PyQt6 download --
+# which is what someone who only wants `steps run` gets.)
+echo "📥 Installing Steps package with IDE + serial support..."
+pip install -e ".[ide,serial]"
 
 # Install development dependencies (optional)
 read -p "Install development dependencies (pytest, mypy, black, isort)? [y/N] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "📥 Installing development dependencies..."
-    pip install pytest pytest-cov mypy black isort
+    pip install -e ".[dev]"
     echo "✓ Development dependencies installed"
 fi
 

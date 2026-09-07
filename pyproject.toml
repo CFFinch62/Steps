@@ -31,12 +31,15 @@ classifiers = [
     "Topic :: Education",
     "Topic :: Software Development :: Interpreters",
 ]
-dependencies = [
-    "fastapi>=0.135.1",
-    "PyQt6>=6.5.0",
-    "PyQt6-WebEngine>=6.5.0",
-    "uvicorn>=0.41.0",
-]
+# Deliberately empty: `steps run` / `steps check` / `steps repl` use only the
+# standard library, so a plain `pip install -e .` gives a working CLI with no
+# heavyweight downloads. Everything else is an extra:
+#   .[ide]     the PyQt6 desktop IDE (steps-ide)   <- setup.sh installs this
+#   .[serial]  pyserial, for the instruments projects
+#   .[web]     the steps-web backend (not shipped in the wheel)
+#   .[vm]      the parked NucleusVM engine
+#   .[dev]     test and lint tooling
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
@@ -53,6 +56,13 @@ ide = [
 ]
 serial = [
     "pyserial>=3.5",
+]
+# steps-web/ only. Not part of the installed package (see `packages` below,
+# which ships src/steps and src/steps_ide), so nothing you pip-install imports
+# these -- they are here for working on the web backend from a checkout.
+web = [
+    "fastapi>=0.135.1",
+    "uvicorn>=0.41.0",
 ]
 # The experimental `--engine vm` path only. NucleusVM is not on PyPI and is
 # not required to run STEPS: the tree-walking interpreter is the default and

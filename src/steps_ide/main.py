@@ -7,9 +7,22 @@ Based on the EZ IDE codebase
 import sys
 import os
 
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QIcon
+try:
+    from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtCore import Qt
+    from PyQt6.QtGui import QFont, QIcon
+except ImportError:
+    # PyQt6 is the `ide` extra, not a base dependency -- `steps run` and
+    # `steps check` need none of it. Say what to install rather than dying
+    # on an import traceback.
+    print(
+        "steps-ide: the IDE needs PyQt6, which is not installed.\n"
+        "           Install it with:  pip install -e '.[ide]'\n"
+        "           (or run ./setup.sh, which does that for you)\n"
+        "           The command-line interpreter works without it: steps run <project>",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
 
 from steps_ide.app.main_window import StepsIDEMainWindow
 from steps_ide.app.settings import SettingsManager
