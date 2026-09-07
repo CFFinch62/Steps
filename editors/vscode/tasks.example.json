@@ -1,0 +1,45 @@
+// Copy into your project's .vscode/tasks.json to drive STEPS as build tasks.
+// This needs no extension at all -- the problem matcher below understands
+// STEPS' file:line:col diagnostics on its own.
+//
+// Note both tasks take ${fileDirname}, not ${file}: `steps run` and
+// `steps check` operate on a project DIRECTORY -- the one holding the
+// .building file -- not on an individual source file. These tasks therefore
+// assume the file you have open sits at the project root. The extension is
+// smarter: it walks up from whatever file is open to find the .building, so
+// Run works from a .step buried in a subdirectory.
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "STEPS: check project",
+      "type": "shell",
+      "command": "steps",
+      "args": ["check", "${fileDirname}"],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "silent", "panel": "dedicated", "clear": true },
+      "problemMatcher": {
+        "owner": "steps",
+        "source": "steps",
+        "fileLocation": "autoDetect",
+        "pattern": {
+          "regexp": "^(.*?):(\\d+):(\\d+):\\s+(Error|Warning)\\s*(?:\\[[A-Z]\\d+\\])?:\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "STEPS: run project",
+      "type": "shell",
+      "command": "steps",
+      "args": ["run", "${fileDirname}"],
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": "$steps"
+    }
+  ]
+}

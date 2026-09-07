@@ -1,0 +1,210 @@
+{
+  "name": "steps-language",
+  "displayName": "STEPS Language",
+  "description": "Syntax highlighting, snippets, and one-key running for the STEPS programming language (.building and .step files).",
+  "version": "0.1.0",
+  "publisher": "fragillidae",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CFFinch62/STEPS.git"
+  },
+  "homepage": "https://github.com/CFFinch62/STEPS#readme",
+  "bugs": {
+    "url": "https://github.com/CFFinch62/STEPS/issues"
+  },
+  "qna": "https://github.com/CFFinch62/STEPS/issues",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Education"
+  ],
+  "keywords": [
+    "steps",
+    "building",
+    "step",
+    "teaching",
+    "beginner"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:steps"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "steps",
+        "aliases": [
+          "STEPS",
+          "steps"
+        ],
+        "extensions": [
+          ".building",
+          ".step"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/file-icon-light.svg",
+          "dark": "./images/file-icon-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "steps",
+        "scopeName": "source.steps",
+        "path": "./syntaxes/steps.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "steps",
+        "path": "./snippets/steps.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "steps.runProject",
+        "title": "STEPS: Run Project",
+        "icon": "$(play)"
+      },
+      {
+        "command": "steps.checkProject",
+        "title": "STEPS: Check Project",
+        "icon": "$(check)"
+      },
+      {
+        "command": "steps.diagram",
+        "title": "STEPS: Show Flow Diagram",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "steps.repl",
+        "title": "STEPS: Open REPL",
+        "icon": "$(terminal)"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "steps.runProject",
+          "when": "resourceLangId == steps",
+          "group": "navigation@1"
+        },
+        {
+          "command": "steps.checkProject",
+          "when": "resourceLangId == steps",
+          "group": "navigation@2"
+        },
+        {
+          "command": "steps.diagram",
+          "when": "resourceLangId == steps",
+          "group": "navigation@3"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "steps.runProject",
+          "when": "resourceLangId == steps",
+          "group": "z_commands@1"
+        },
+        {
+          "command": "steps.checkProject",
+          "when": "resourceLangId == steps",
+          "group": "z_commands@2"
+        }
+      ],
+      "commandPalette": [
+        { "command": "steps.runProject", "when": "resourceLangId == steps" },
+        { "command": "steps.checkProject", "when": "resourceLangId == steps" },
+        { "command": "steps.diagram", "when": "resourceLangId == steps" },
+        { "command": "steps.repl" }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "steps.runProject",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "resourceLangId == steps && editorTextFocus"
+      },
+      {
+        "command": "steps.checkProject",
+        "key": "ctrl+shift+f5",
+        "mac": "cmd+shift+f5",
+        "when": "resourceLangId == steps && editorTextFocus"
+      },
+      {
+        "command": "steps.diagram",
+        "key": "ctrl+d",
+        "mac": "cmd+d",
+        "when": "resourceLangId == steps && editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "STEPS",
+      "properties": {
+        "steps.interpreterPath": {
+          "type": "string",
+          "default": "steps",
+          "markdownDescription": "Path to the `steps` command. Leave as `steps` if `pip install -e .` put it on your `PATH` (the standalone build installs to `~/.local/bin/steps`); otherwise give an absolute path."
+        },
+        "steps.saveBeforeRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save the file automatically before running or checking the project."
+        },
+        "steps.runInTerminal": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Run in an integrated terminal, which keeps `input` usable.\n\nTurn this **off** to capture output in an Output channel instead, which is what populates the Problems panel. **STEPS: Check Project** always uses the Output channel, so you can leave this on and still get diagnostics on demand."
+        },
+        "steps.checkOnSave": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Run `steps check` on the enclosing project whenever a `.building` or `.step` file is saved, and report the results in the Problems panel. Off by default because it spawns the interpreter on every save."
+        },
+        "steps.engine": {
+          "type": "string",
+          "enum": ["tree", "vm"],
+          "default": "tree",
+          "markdownDescription": "Execution engine passed to `steps run` as `--engine`. `tree` is the default tree-walking interpreter; `vm` compiles to NucleusVM bytecode, which is opt-in and additive."
+        }
+      }
+    },
+    "problemMatchers": [
+      {
+        "name": "steps",
+        "owner": "steps",
+        "source": "steps",
+        "fileLocation": "autoDetect",
+        "pattern": {
+          "regexp": "^(.*?):(\\d+):(\\d+):\\s+(Error|Warning)\\s*(?:\\[[A-Z]\\d+\\])?:\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "steps",
+        "required": [
+          "project"
+        ],
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "The STEPS project directory to run."
+          }
+        }
+      }
+    ]
+  }
+}

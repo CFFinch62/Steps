@@ -1,0 +1,180 @@
+{
+  "Building": {
+    "prefix": "building",
+    "body": [
+      "building: ${1:project_name}",
+      "    note: ${2:What this program does}",
+      "",
+      "    floors:",
+      "        floor: ${3:main}",
+      "            step: ${4:do_the_thing}",
+      "",
+      "    ${0}",
+      "    exit"
+    ],
+    "description": "A complete building — the program's entry point"
+  },
+  "Floors block": {
+    "prefix": "floors",
+    "body": [
+      "floors:",
+      "    floor: ${1:name}",
+      "        step: ${0:step_name}"
+    ],
+    "description": "The floors declaration listing each floor and its steps"
+  },
+  "Floor": {
+    "prefix": "floor",
+    "body": ["floor: ${1:name}", "    step: ${0:step_name}"],
+    "description": "One floor and the steps that belong to it"
+  },
+  "Step file": {
+    "prefix": "step",
+    "body": [
+      "step: ${1:step_name}",
+      "    belongs to: ${2:floor_name}",
+      "    expects: ${3:input_value}",
+      "    returns: ${4:text}",
+      "",
+      "    note: ${5:What this step does}",
+      "",
+      "    do:",
+      "        ${0}"
+    ],
+    "description": "A complete .step file with its header and body"
+  },
+  "Step (no inputs)": {
+    "prefix": "step0",
+    "body": [
+      "step: ${1:step_name}",
+      "    belongs to: ${2:floor_name}",
+      "",
+      "    do:",
+      "        ${0}"
+    ],
+    "description": "A step that takes nothing and returns nothing"
+  },
+  "Riser": {
+    "prefix": "riser",
+    "body": [
+      "riser: ${1:helper_name}",
+      "    expects: ${2:value}",
+      "",
+      "    do:",
+      "        ${0}"
+    ],
+    "description": "A private helper inside a step"
+  },
+  "If": {
+    "prefix": "if",
+    "body": ["if ${1:condition}", "    ${0}"],
+    "description": "An if block"
+  },
+  "If / otherwise": {
+    "prefix": "ifelse",
+    "body": ["if ${1:condition}", "    ${2}", "otherwise", "    ${0}"],
+    "description": "An if / otherwise block"
+  },
+  "If / otherwise if": {
+    "prefix": "ifelseif",
+    "body": [
+      "if ${1:condition}",
+      "    ${2}",
+      "otherwise if ${3:condition}",
+      "    ${4}",
+      "otherwise",
+      "    ${0}"
+    ],
+    "description": "An if / otherwise if / otherwise chain"
+  },
+  "Repeat for each": {
+    "prefix": "foreach",
+    "body": ["repeat for each ${1:item} in ${2:items}", "    ${0}"],
+    "description": "Loop over every item in a list"
+  },
+  "Repeat n times": {
+    "prefix": "repeat",
+    "body": ["repeat ${1:5} times", "    ${0}"],
+    "description": "Repeat a fixed number of times"
+  },
+  "While": {
+    "prefix": "while",
+    "body": ["while ${1:condition}", "    ${0}"],
+    "description": "A while loop"
+  },
+  "Set": {
+    "prefix": "set",
+    "body": ["set ${1:name} to ${0:value}"],
+    "description": "Assign a value to a variable"
+  },
+  "Declare": {
+    "prefix": "declare",
+    "body": ["declare ${1:name} as ${0:number}"],
+    "description": "Declare a variable with a type"
+  },
+  "Display": {
+    "prefix": "display",
+    "body": ["display ${0:\"text\"}"],
+    "description": "Write a line to the console"
+  },
+  "Display joined text": {
+    "prefix": "displayjoin",
+    "body": ["display \"${1:Total: }\" added to (${2:value}) as text"],
+    "description": "Join text and a value for display"
+  },
+  "Input": {
+    "prefix": "input",
+    "body": ["input ${1:answer} with prompt ${0:\"What is your name? \"}"],
+    "description": "Read a line from the user"
+  },
+  "Call a step": {
+    "prefix": "call",
+    "body": ["call ${1:step_name} with ${2:argument} storing result in ${0:result}"],
+    "description": "Call a step and keep its result"
+  },
+  "Call (no result)": {
+    "prefix": "call0",
+    "body": ["call ${1:step_name} with ${0:argument}"],
+    "description": "Call a step for its effect only"
+  },
+  "Return": {
+    "prefix": "return",
+    "body": ["return ${0:value}"],
+    "description": "Return a value from a step"
+  },
+  "Attempt / if unsuccessful": {
+    "prefix": "attempt",
+    "body": [
+      "attempt:",
+      "    ${1}",
+      "if unsuccessful:",
+      "    ${0}"
+    ],
+    "description": "Try something and handle failure"
+  },
+  "Note": {
+    "prefix": "note",
+    "body": ["note: ${0:explanation}"],
+    "description": "A comment"
+  },
+  "Note block": {
+    "prefix": "noteblock",
+    "body": ["note block:", "    ${0:longer explanation}", "end note"],
+    "description": "A multi-line comment"
+  },
+  "Random integer": {
+    "prefix": "random",
+    "body": ["call random_int with ${1:1}, ${2:100} storing result in ${0:n}"],
+    "description": "A random whole number in a range"
+  },
+  "Read a file": {
+    "prefix": "readfile",
+    "body": ["call read_file with ${1:filename} storing result in ${0:contents}"],
+    "description": "Read a text file"
+  },
+  "Read a CSV": {
+    "prefix": "readcsv",
+    "body": ["call read_csv with ${1:filename} storing result in ${0:rows}"],
+    "description": "Read a CSV file into a list of rows"
+  }
+}

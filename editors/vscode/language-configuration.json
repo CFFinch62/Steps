@@ -1,0 +1,44 @@
+{
+  "comments": {
+    "lineComment": "note:",
+    "blockComment": ["note block:", "end note"]
+  },
+  "brackets": [
+    ["(", ")"],
+    ["[", "]"]
+  ],
+  "autoClosingPairs": [
+    { "open": "(", "close": ")" },
+    { "open": "[", "close": "]" },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] }
+  ],
+  "surroundingPairs": [
+    ["(", ")"],
+    ["[", "]"],
+    ["\"", "\""]
+  ],
+  "autoCloseBefore": ")],\t\n ",
+  "wordPattern": "[A-Za-z_][A-Za-z0-9_]*",
+  "_comment": "STEPS is indentation-structured, so folding follows indentation (offSide). Not every `keyword:` line opens a block: `expects:`, `belongs to:`, `returns:` and `note:` are header lines whose body is the rest of the same line. And `step:` is ambiguous -- at column 0 it defines a step and its body follows, while indented inside a `floors:` block it is one entry in a list and opens nothing. The patterns below distinguish the two by indentation, which is exactly what the language uses.",
+  "indentationRules": {
+    "increaseIndentPattern": "(?i)^(?:(?:building|step|riser)\\s*:|\\s*(?:floors|floor|do|attempt|if unsuccessful|then continue)\\s*:|\\s*(?:if|otherwise|repeat|while)\\b)",
+    "decreaseIndentPattern": "(?i)^\\s*(?:otherwise\\b|end note\\b|if unsuccessful\\s*:|then continue\\s*:)"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "(?i)^(?:(?:building|step|riser)\\s*:|\\s*(?:floors|floor|do|attempt|if unsuccessful|then continue)\\s*:|\\s*(?:if|otherwise|repeat|while)\\b)",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "(?i)^\\s*(?:return|exit)\\b.*$",
+      "action": { "indent": "outdent" }
+    },
+    {
+      "beforeText": "(?i)^\\s*note:",
+      "action": { "indent": "none", "appendText": "note: " }
+    }
+  ],
+  "folding": {
+    "offSide": true
+  }
+}

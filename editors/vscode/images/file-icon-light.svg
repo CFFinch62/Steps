@@ -1,0 +1,13 @@
+<!-- STEPS file icon, light themes. The ascending staircase from
+     images/steps_simple.svg with the S-T-E-P-S lettering dropped and five
+     bars reduced to four: at the 16px the explorer renders, the letters are
+     illegible and five bars leave gaps too fine to survive antialiasing.
+     The rising silhouette is what carries the idea — a program built floor by
+     floor — so it is what is kept. Colours are the icon's own ramp.
+     Drawn as geometry so it needs no font. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <rect x="0.8"  y="10.6" width="3.1" height="4.6" rx="0.6" fill="#1d4ed8"/>
+  <rect x="4.5"  y="7.8"  width="3.1" height="7.4" rx="0.6" fill="#15803d"/>
+  <rect x="8.2"  y="5.0"  width="3.1" height="10.2" rx="0.6" fill="#c2410c"/>
+  <rect x="11.9" y="2.2"  width="3.1" height="13.0" rx="0.6" fill="#b91c1c"/>
+</svg>

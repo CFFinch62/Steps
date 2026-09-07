@@ -1,0 +1,183 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "STEPS",
+  "scopeName": "source.steps",
+  "fileTypes": [
+    "step",
+    "building"
+  ],
+  "_comment": "Generated from steps.lexer's own tables: 27 MULTI_WORD_KEYWORDS, 11 COLON_KEYWORDS, 50 KEYWORDS (split by role, verified exhaustive and disjoint) and the 56 entries in steps.builtins.NATIVE_FUNCTIONS. Multi-word operators are matched FIRST -- `added to` and `is greater than or equal to` must win before `to` or `not` can claim a word out of the middle of them.",
+  "patterns": [
+    {
+      "include": "#comment_note_block"
+    },
+    {
+      "include": "#comment_note"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#declaration"
+    },
+    {
+      "include": "#keyword_multiword"
+    },
+    {
+      "include": "#keyword_colon"
+    },
+    {
+      "include": "#keyword_structure"
+    },
+    {
+      "include": "#keyword_control"
+    },
+    {
+      "include": "#keyword_statement"
+    },
+    {
+      "include": "#keyword_operator_word"
+    },
+    {
+      "include": "#storage_type"
+    },
+    {
+      "include": "#constant_language"
+    },
+    {
+      "include": "#support_native"
+    },
+    {
+      "include": "#constant_numeric"
+    },
+    {
+      "include": "#operator"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comment_note_block": {
+      "comment": "note block: ... end note \u2014 a multi-line comment.",
+      "name": "comment.block.steps",
+      "begin": "(?i)\\bnote\\s+block:",
+      "end": "(?i)\\bend\\s+note\\b"
+    },
+    "comment_note": {
+      "comment": "note: ... to end of line \u2014 STEPS' line comment.",
+      "name": "comment.line.note.steps",
+      "match": "(?i)\\bnote:.*$"
+    },
+    "string": {
+      "name": "string.quoted.double.steps",
+      "begin": "\"",
+      "end": "\"|$",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.steps"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.steps"
+        }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.steps",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "declaration": {
+      "comment": "building: / floor: / step: / riser: <name> \u2014 the architectural spine. The name is scoped as a definition so the structure reads at a glance.",
+      "match": "(?i)^\\s*(building|floor|step|riser)(:)\\s*([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "keyword.declaration.steps"
+        },
+        "2": {
+          "name": "punctuation.separator.colon.steps"
+        },
+        "3": {
+          "name": "entity.name.type.steps"
+        }
+      }
+    },
+    "keyword_multiword": {
+      "comment": "Longest-first, so `is greater than or equal to` wins over `is greater than`.",
+      "name": "keyword.operator.word.steps",
+      "match": "(?i)\\b(is\\s+greater\\s+than\\s+or\\s+equal\\s+to|is\\s+less\\s+than\\s+or\\s+equal\\s+to|storing\\s+result\\s+in|if\\s+unsuccessful:|is\\s+greater\\s+than|is\\s+not\\s+equal\\s+to|then\\s+continue:|character\\s+at|is\\s+a\\s+boolean|is\\s+less\\s+than|otherwise\\s+if|belongs\\s+to:|is\\s+a\\s+number|is\\s+equal\\s+to|note\\s+block:|starts\\s+with|is\\s+a\\s+table|ends\\s+with|is\\s+a\\s+list|is\\s+a\\s+text|length\\s+of|added\\s+to|end\\s+note|for\\s+each|split\\s+by|type\\s+of|is\\s+in)"
+    },
+    "keyword_colon": {
+      "name": "keyword.declaration.steps",
+      "match": "(?i)\\b(building|attempt|declare|expects|returns|floors|floor|riser|note|step|do)(?=:)"
+    },
+    "keyword_structure": {
+      "name": "keyword.declaration.steps",
+      "match": "(?i)\\b(building|attempt|declare|expects|returns|floors|floor|riser|note|step|do)\\b"
+    },
+    "keyword_control": {
+      "name": "keyword.control.steps",
+      "match": "(?i)\\b(otherwise|repeat|return|times|while|call|exit|if)\\b"
+    },
+    "keyword_statement": {
+      "name": "keyword.other.statement.steps",
+      "match": "(?i)\\b(indicate|display|remove|clear|input|add|set)\\b"
+    },
+    "keyword_operator_word": {
+      "name": "keyword.operator.word.steps",
+      "match": "(?i)\\b(iteration|contains|console|equals|modulo|limit|from|with|and|not|as|in|of|or|to)\\b"
+    },
+    "storage_type": {
+      "name": "storage.type.steps",
+      "match": "(?i)\\b(boolean|nothing|number|fixed|table|list|text)\\b"
+    },
+    "constant_language": {
+      "name": "constant.language.steps",
+      "match": "(?i)\\b(false|true)\\b"
+    },
+    "support_native": {
+      "comment": "The 56 NATIVE_FUNCTIONS, reached through `call <name> with ...`.",
+      "name": "support.function.builtin.steps",
+      "match": "(?i)\\b(restore_terminal|serial_read_line|random_choice|progress_bar|serial_close|append_file|center_text|create_list|file_exists|hide_cursor|move_cursor|reset_color|serial_open|show_cursor|characters|random_int|write_file|date_diff|lowercase|read_file|set_color|uppercase|write_csv|index_of|list_max|list_min|list_sum|pad_text|poll_key|read_csv|degrees|radians|replace|banner|atan2|log10|sleep|slice|acos|asin|atan|date|line|log2|sqrt|time|trim|box|cos|exp|log|pow|sin|sqr|tan|pi)\\b"
+    },
+    "constant_numeric": {
+      "name": "constant.numeric.steps",
+      "match": "\\b[0-9]+(?:\\.[0-9]+)?\\b"
+    },
+    "operator": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.steps",
+          "match": "[+\\-*/]"
+        },
+        {
+          "name": "keyword.operator.assignment.steps",
+          "match": "="
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.parameters.steps",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.definition.index.steps",
+          "match": "[\\[\\]]"
+        },
+        {
+          "name": "punctuation.separator.comma.steps",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.steps",
+          "match": ":"
+        }
+      ]
+    }
+  }
+}

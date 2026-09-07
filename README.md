@@ -35,7 +35,7 @@ This hierarchy enforces decomposition - you can't write monolithic code in STEPS
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/CFFinch62/STEPS.git
 cd STEPS
 
 # Create virtual environment
@@ -236,6 +236,37 @@ native-function calls. See NucleusVM's `PROGRESS.md` for the full
 investigation, including a real dynamic-scoping gap in NucleusVM's shared
 core (STEPS is the first language to actually exercise it) that was
 caught and fixed before this engine's compiler was even written.
+
+---
+
+## 🧩 Editor Support
+
+[editors/vscode](editors/vscode) is a VS Code extension for `.building` and
+`.step` files.
+
+Highlighting is generated from the lexer's own tables — 27 multi-word keywords,
+11 colon keywords, 50 plain keywords and the 56 native functions. The
+multi-word operators are matched first, so `is greater than or equal to`,
+`storing result in`, `added to` and `for each` highlight as single operators
+instead of dissolving into their component words. `building:`, `floor:`,
+`step:` and `riser:` names are scoped as definitions.
+
+**Run works on projects, not files** — as the language intends. `steps run`
+takes the directory holding the `.building` file, so the extension walks up
+from whatever you have open until it finds one, and runs the whole project. It
+works the same from the `.building` itself or from a `.step` three directories
+down. Running a single step in isolation stays a terminal job
+(`steps run-step`).
+
+The indentation rules distinguish cases the syntax overloads: a `step:` at
+column 0 defines a step and opens its body, while an indented `step:` inside a
+`floors:` block is one entry in a list and opens nothing. `expects:`,
+`belongs to:` and `returns:` are header lines, not blocks.
+
+**Show Flow Diagram** (`Ctrl+D`, matching the IDE) renders `steps diagram` in a
+panel beside the editor rather than a terminal that scrolls away. Diagnostics
+land on the exact character with the error code attached, and a runtime error's
+`Hint:` line is folded into the same message.
 
 ---
 
