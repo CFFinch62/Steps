@@ -197,6 +197,22 @@ tree-walking, instead of interpreting the AST directly. It's opt-in and
 additive — the tree-walking interpreter remains the default and is
 untouched by this.
 
+> **Not installed by default, and no longer under active development.**
+> NucleusVM did not deliver the speed-up it was built for when measured, so
+> the experiment is parked. The code still works and is kept for reference,
+> but it is an optional extra rather than a dependency: STEPS installs and
+> runs without it, and nothing else in the language needs it.
+>
+> NucleusVM is not on PyPI. To try this path, install it from a local
+> checkout of the sibling repo:
+>
+> ```bash
+> pip install -e ../NucleusVM
+> ```
+>
+> Without it, `--engine vm` reports what is missing and exits 1 rather than
+> failing with an import error.
+
 ```bash
 python -m steps.main run --engine vm my_project/
 ```

@@ -119,10 +119,21 @@
         }
       ],
       "commandPalette": [
-        { "command": "steps.runProject", "when": "resourceLangId == steps" },
-        { "command": "steps.checkProject", "when": "resourceLangId == steps" },
-        { "command": "steps.diagram", "when": "resourceLangId == steps" },
-        { "command": "steps.repl" }
+        {
+          "command": "steps.runProject",
+          "when": "resourceLangId == steps"
+        },
+        {
+          "command": "steps.checkProject",
+          "when": "resourceLangId == steps"
+        },
+        {
+          "command": "steps.diagram",
+          "when": "resourceLangId == steps"
+        },
+        {
+          "command": "steps.repl"
+        }
       ]
     },
     "keybindings": [
@@ -170,9 +181,12 @@
         },
         "steps.engine": {
           "type": "string",
-          "enum": ["tree", "vm"],
+          "enum": [
+            "tree",
+            "vm"
+          ],
           "default": "tree",
-          "markdownDescription": "Execution engine passed to `steps run` as `--engine`. `tree` is the default tree-walking interpreter; `vm` compiles to NucleusVM bytecode, which is opt-in and additive."
+          "markdownDescription": "Execution engine passed to `steps run` as `--engine`.\n\n`tree` is the default and needs nothing extra. `vm` compiles to NucleusVM bytecode — an experiment that did not deliver the speed-up it was built for, so it is parked and **not installed by default**. Selecting it without NucleusVM present makes every run report the missing dependency and fail; install it with `pip install -e ../NucleusVM` first."
         }
       }
     },

@@ -59,7 +59,19 @@ def run_project(project_path: str, engine: str = "tree") -> int:
         return 1
 
     if engine == "vm":
-        from steps.vm_compiler import run_building_vm
+        try:
+            from steps.vm_compiler import run_building_vm
+        except ImportError:
+            # NucleusVM is an optional extra, not a requirement: the
+            # tree-walking interpreter above is the default and needs none of
+            # it. Say so plainly rather than surfacing a raw ImportError.
+            print(
+                "steps: --engine vm needs NucleusVM, which is not installed.\n"
+                "       Install it with:  pip install -e '.[vm]'\n"
+                "       (or drop --engine vm to use the default interpreter)",
+                file=sys.stderr,
+            )
+            return 1
         try:
             run_building_vm(building, environment)
         except NotImplementedError as e:
